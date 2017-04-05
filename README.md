@@ -19,8 +19,9 @@ vol-test supports testing against remote environments. Remote Docker hosts shoul
     ```
     git clone https://github.com/khudgins/vol-test
     cd vol-tests
-    git submodule update --recursive --remote
+    git submodule update --init --recursive --remote
     ```
+    *NOTE*: Use `git submodule update --recursive --remote` for subsequent submodule pulls.
 
 ## Running
 
@@ -44,7 +45,7 @@ Example using the vieux/sshfs driver (replace `vieux/sshfs` with the name of the
 
 Prior to running tests the first time, you'll want to pull all the BATS assist submodules, as well:
 ```
-git submodule update --recursive --remote
+git submodule update --init --recursive --remote
 ```
 
 ```
