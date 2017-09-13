@@ -1,7 +1,10 @@
 #!/bin/bash -ex 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-#. envfile.sh
+# Only source env if vars aren't set (by Jenkins) so it can be run manually
+if [[ -z $IAAS ]]; then
+  . envfile.sh
+fi
 
   # TODO: provision new key and add to jenkins slaves
 
@@ -10,20 +13,21 @@ if [[ -z $DEPTH ]] || [[ -z "$STORAGEOS_VERSION" ]]; then
   exit 1
 fi
 
+if ! which terraform; then
+  (>2& echo "Terraform must be installed and in your path") 
+  exit 1
+fi
+
 function main() {
 for IaaS in $IAAS; do
     IAASDIR="$DIR/cloud-provisioners/${IaaS}/"
     
     # it is wasteful to run a job if identical depth and identical storageos version 
-    JOBUID="${DEPTH}-$(echo $STORAGEOS_VERSION | tr '.' '_')"
+    JOBUID="${DEPTH}-$(echo $STORAGEOS_VERSION | tr '.' '_')-$BUILD_TAG"
 
     # we take the existence of this unique job file to mean a cluster for this job is running
     # this is what the limitations of bash lead to..
-    if [[ -f $IAASDIR/configs/$JOBUID ]]; then
-      (>2& echo "Job file already exists, Provisioner failed for suites on $IaaS, continuing..")
-      continue 
-    else
-      file=$(tempfile)
+      file=$(mktemp)
 
       if [[ $CONTAINER == "true" ]]; then
         cat $IAASDIR/jobs/container/$DEPTH > $file
@@ -33,8 +37,7 @@ for IaaS in $IAAS; do
 
       mkdir -p $IAASDIR/configs
       cp -T $file $IAASDIR/configs/$JOBUID
-      env JOBUID=$JOBUID STORAGEOS_VERSION=$STORAGEOS_VERSION $IAASDIR/scripts/new-cluster.sh 
-    fi
+      env DO_TOKEN=$DO_TOKEN PVTK_PATH=$PVTK_PATH PUBK_PATH=$PUBK_PATH JOBUID=$JOBUID STORAGEOS_VERSION=$STORAGEOS_VERSION $IAASDIR/scripts/new-cluster.sh 
 
 done 
 }
