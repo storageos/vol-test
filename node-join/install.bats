@@ -24,14 +24,13 @@ load ../test_helper
   #  -v /var/lib/storageos:/var/lib/storageos:rshared \
   #  -v /run/docker/plugins:/run/docker/plugins \
   #  storageos/node server
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
-
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  for i in "${arr[@]}"
+  do
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    assert_success
+  done
 }
 
 @test "IP list join [VERIFY]" {
@@ -71,14 +70,13 @@ load ../test_helper
 
   printf "Doing install-time join: %s\n" "$JOIN"
 
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
-
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  for i in "${arr[@]}"
+  do
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    assert_success
+  done
 }
 
 @test "IP list join no port [VERIFY]" {
@@ -115,14 +113,13 @@ load ../test_helper
 
   printf "Doing install-time join: %s\n" "$JOIN"
 
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
-
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  for i in "${arr[@]}"
+  do
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    assert_success
+  done
 }
 
 @test "IP list join scheme [VERIFY]" {
@@ -159,14 +156,13 @@ load ../test_helper
 
   printf "Doing install-time join: %s\n" "$JOIN"
 
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
-
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  for i in "${arr[@]}"
+  do
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    assert_success
+  done
 }
 
 @test "IP list join scheme no port [VERIFY]" {
@@ -203,14 +199,13 @@ load ../test_helper
 
   printf "Doing install-time join: %s\n" "$JOIN"
 
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
-
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  for i in "${arr[@]}"
+  do
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    assert_success
+  done
 }
 
 @test "IP list join mixture [VERIFY]" {
@@ -247,14 +242,13 @@ load ../test_helper
 
   printf "Doing install-time join: %s\n" "$JOIN"
 
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
-
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
-  assert_success
+  for i in "${arr[@]}"
+  do
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    assert_success
+  done
 
   # Let the cluster settle
   sleep 10
