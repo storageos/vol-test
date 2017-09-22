@@ -18,8 +18,8 @@
     Match           *
     Host            logs.storageos.cloud
     Port            9200
-    HTTP_User       access
-    HTTP_Passwd     keetoh6I
+    HTTP_User       ${http_user}
+    HTTP_Passwd     ${http_pass}
     Type            fluent
     Logstash_Format On
     Logstash_Prefix logstash
@@ -30,4 +30,4 @@
 [FILTER]
     Name record_modifier
     Match *
-    record host ${HOSTNAME}
+    record host $${HOSTNAME}

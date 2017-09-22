@@ -35,6 +35,14 @@ variable "ssh_fingerprint" {
   description = "SSH fingerprint of key to add to digital ocean, must be already in account"
 }
 
+variable "log_user" {
+  description = "http auth username for fluentd collector agent"
+}
+
+variable "log_pass" {
+  description = "http auth password for fluentd collector agent"
+}
+
 variable "do_token" {}
 variable "pvt_key_path" {}
 
