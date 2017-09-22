@@ -6,10 +6,10 @@ load ../test_helper
 
 @test "join after volume create [INSTALL]" {
   AIP1=$(echo $prefix | cut -f 2 -d'@')
-  JOIN=$(printf "%s:5705" "$AIP1")
+  join=$(printf "%s:5705" "$AIP1")
 
   # One node for now
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
   assert_success
 
   # Need to do a long wait until DEV-1645 is fixed
