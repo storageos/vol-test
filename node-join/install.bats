@@ -8,14 +8,14 @@ load ../test_helper
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
   AIP3=$(echo $prefix3 | cut -f 2 -d'@')
-  JOIN=$(printf "%s:5705,%s:5705,%s:5705" "$AIP1" "$AIP2" "$AIP3")
+  join=$(printf "%s:5705,%s:5705,%s:5705" "$AIP1" "$AIP2" "$AIP3")
 
-  printf "Doing install-time join: %s\n" "$JOIN"
+  printf "Doing install-time join: %s\n" "$join"
 
   #run $prefix docker run -d --name storageos \
   #  -e HOSTNAME \
   #  -e ADVERTISE_IP=$AIP1 \
-  #  -e JOIN=$JOIN \
+  #  -e JOIN=$join \
   #  --net=host \
   #  --pid=host \
   #  --privileged \
@@ -28,9 +28,11 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
+
+  sleep 5
 }
 
 @test "IP list join [VERIFY]" {
@@ -38,6 +40,8 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
+    printf "Checking state on %s\n" "$i"
+
     run $i storageos $cliopts node ls --format {{.Name}}
     assert_success
 
@@ -46,7 +50,6 @@ load ../test_helper
 
     [ "$hosts" -eq 3 ]
   done
-
 }
 
 @test "IP list join [TEARDOWN]" {
@@ -66,17 +69,19 @@ load ../test_helper
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
   AIP3=$(echo $prefix3 | cut -f 2 -d'@')
-  JOIN=$(printf "%s,%s,%s" "$AIP1" "$AIP2" "$AIP3")
+  join=$(printf "%s,%s,%s" "$AIP1" "$AIP2" "$AIP3")
 
-  printf "Doing install-time join: %s\n" "$JOIN"
+  printf "Doing install-time join: %s\n" "$join"
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
+
+  sleep 5
 }
 
 @test "IP list join no port [VERIFY]" {
@@ -109,17 +114,19 @@ load ../test_helper
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
   AIP3=$(echo $prefix3 | cut -f 2 -d'@')
-  JOIN=$(printf "http://%s:5705,http://%s:5705,http://%s:5705" "$AIP1" "$AIP2" "$AIP3")
+  join=$(printf "http://%s:5705,http://%s:5705,http://%s:5705" "$AIP1" "$AIP2" "$AIP3")
 
-  printf "Doing install-time join: %s\n" "$JOIN"
+  printf "Doing install-time join: %s\n" "$join"
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
+
+  sleep 5
 }
 
 @test "IP list join scheme [VERIFY]" {
@@ -152,17 +159,19 @@ load ../test_helper
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
   AIP3=$(echo $prefix3 | cut -f 2 -d'@')
-  JOIN=$(printf "http://%s,http://%s,http://%s" "$AIP1" "$AIP2" "$AIP3")
+  join=$(printf "http://%s,http://%s,http://%s" "$AIP1" "$AIP2" "$AIP3")
 
-  printf "Doing install-time join: %s\n" "$JOIN"
+  printf "Doing install-time join: %s\n" "$join"
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
+
+  sleep 5
 }
 
 @test "IP list join scheme no port [VERIFY]" {
@@ -195,17 +204,19 @@ load ../test_helper
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
   AIP3=$(echo $prefix3 | cut -f 2 -d'@')
-  JOIN=$(printf "%s:5705,http://%s,http://%s:5705" "$AIP1" "$AIP2" "$AIP3")
+  join=$(printf "%s:5705,http://%s,http://%s:5705" "$AIP1" "$AIP2" "$AIP3")
 
-  printf "Doing install-time join: %s\n" "$JOIN"
+  printf "Doing install-time join: %s\n" "$join"
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
+
+  sleep 5
 }
 
 @test "IP list join mixture [VERIFY]" {
@@ -238,15 +249,15 @@ load ../test_helper
   run $prefix storageos $cliopts cluster create
   assert_success
 
-  JOIN=$output
+  join=$output
 
-  printf "Doing install-time join: %s\n" "$JOIN"
+  printf "Doing install-time join: %s\n" "$join"
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$JOIN
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
 
