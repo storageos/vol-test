@@ -60,7 +60,7 @@ load ../../test_helper
 @test "cluster health existing cluster using bad api" {
   run $prefix STORAGEOS_HOST=999.999.999.999 storageos $cliopts cluster health
   assert_failure
-  assert_output "Get http://999.999.999.999:5705/version: dial tcp: lookup 999.999.999.999: no such host"
+  assert_output "API not responding to list nodes: Get http://999.999.999.999:5705/version: dial tcp: lookup 999.999.999.999: no such host"
 }
 
 @test "cluster health existing cluster using api" {
