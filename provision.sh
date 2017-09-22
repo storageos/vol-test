@@ -78,6 +78,13 @@ function download_storageos_cli()
       curl --fail -sSL "https://github.com/storageos/go-cli/releases/download/${cli_version}/storageos_linux_amd64" > "$cli_binary"
       chmod +x "$cli_binary"
     fi
+
+    echo "Testing downloaded CLI using Docker"
+    if ! docker run -ti -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help; then
+      echo "Failed to run storageos binary '$cli_binary'" >&2
+      exit 1
+    fi
+
   else
     # Build the binary.
     echo "Building CLI from source, branch ${cli_branch}"
