@@ -3,7 +3,7 @@
 The Job runner allows to provision stress tests on top of regular storageos clusters.
 They are run through the runner [code](http://code.storageos.net/projects/TOOL/repos/runner/browse)
 
-When the pipeline is running it's entrypoint is './stress-test-trigger.sh' or `./perf-test-trigger.sh` , this is fed the env variables in `envfile.sh`
+When the pipeline is running it's entrypoint is `./stress-test-trigger.sh` or `./perf-test-trigger.sh` , this is fed the env variables in `envfile.sh`
 configuring the IAAS for the stress tests, a pre-set setting of stress tests (low medium high) and whether the tests are run 
 in containers or on the host straight..
 
@@ -12,15 +12,11 @@ in containers or on the host straight..
 Note: since bash doesn't offer 'modular' programming, code organisation is done through conventions regarding folders:
 
 - Each IAAS provider has a folder under `TLD/cloud-provisioners` (currently only '/do'), This folder must have a `scripts/new-cluster.sh` script 
-which manages the configuration of stress test clusters within its `/do` folder, this is currently done with a minimal layer of templating on top of terraform modules. 
+which manages the configuration of stress test clusters within its `/do` folder, this is currently done with a layer of templating on top of terraform modules. 
 
-Our `TLD/tests/` directory contains the source script for stress tests as well as Dockerfiles for them
+The runner job config is the same for a particular cluster at a particular stress test or benchmark profile (eg `low`) and this config is run on every node using the runner and systemd.
 
-* we assume in our stress tests (both in host and container) that the /datdirectory is the storageos volume mount point both in container or on the host. *
-
-The runner job config is the same for a particular cluster at a particular stress test profile (eg `low`) and this config is run on every node using the runner and systemd.
-
-We fix all stress test clusters to be 3 node clusters, this is easy to reconfigure in the `TLD/cloud-providers/templates/cluster.template`
+We fix all stress test clusters to be 3 node clusters, this is easy to reconfigure in the `TLD/cloud-providers/templates/${stress,cluster}/cluster.template`
 
 ## conventions for development
 
@@ -44,12 +40,11 @@ at any point the terraform source for all clusters is contained in files named: 
 - The templates/ directory in each IAAS contains `lib/bash-tempalter` templates, this is used to overcome shortcomings in terraform multi-modules. it generates the terraform sources for each cluster and the `DODIR/configs/$PROFILE-STORAGEOS_VERSION.service` systemd runner script.
 
 - We copy the `node-scripts` directory (which will be scripts invoked by the runner)
-:x
 It also contains systemd tempaltes which we use to add node restart behaviour to our runner.
 
 the `node-scripts` directory (which is copied to every node) call to the script in the relevant `node-scripts/src` which contains the source script of Dockerfile.
 This is self explanatory if you read the source from the job files which call the node-scripts (assuming they are in home root) which themselves are organised in src/
 
-Sometimes these scripts are made 'compatible' between host and container run.. meaning that provided with the appropriate setup (mounting a disk natively or just creating it in storageos) and calls the same inner script to be DRY. (check kernel-compile for more details)
+Sometimes these scripts are made 'compatible' between host and container run.. meaning that provided with the appropriate setup (mounting a disk natively or just creating it in storageos) and calls the same inner script to be DRY. (check kernel-compile for more details) don't be surprised by this.. just saving effort between making dockerfile and writing the script for host.
 
 Please see (document on adding stress tests (or benchmark tests ))[http://wiki.storageos.net/display/DOC/Adding+a+stress+test+or+benchmark] for more details.
