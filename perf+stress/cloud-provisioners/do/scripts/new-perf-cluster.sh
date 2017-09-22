@@ -26,6 +26,7 @@ terraform apply -var "tag=perf-$BUILD_TAG" \
   -var "do_token=$DO_TOKEN" \
   -var "pub_key_path=$PUBK_PATH" \
   -var "pvt_key_path=$PVTK_PATH" \
-  -var "ssh_fingerprint=$SSH_FINGERPRINT" 
-
+  -var "ssh_fingerprint=$SSH_FINGERPRINT" \
+  -var "log_user=$LOG_USER" \
+  -var "log_pass=$LOG_PASS" 
 popd

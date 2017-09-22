@@ -10,10 +10,18 @@ data "template_file" "cluster_config" {
 }
 
 data "template_file" "storageos-service" {
-  template = "${file("./files/storageos.service.tpl")}"
+  template = "${file("${path.module}/files/storageos.service.tpl")}"
 
   vars {
     docker_image = "storageos/node:${var.node_container_version}"
+  }
+}
+
+data "template_file" "td_config" {
+  template = "${file("${path.module}/files/td-agent-bit.conf.tpl")}"
+  vars {
+    http_user = "${var.log_user}"
+    http_pass = "${var.log_pass}"
   }
 }
 
@@ -89,7 +97,8 @@ resource "null_resource" "install-apps" {
       private_key = "${file(var.pvt_key_path)}"
       timeout = "10s"
     }
-    source = "./files/td-agent-bit.conf"
+
+    content = "${data.template_file.td_config.rendered}"
     destination = "/etc/td-agent-bit/td-agent-bit.conf"
   }
 
@@ -100,7 +109,7 @@ resource "null_resource" "install-apps" {
       private_key = "${file(var.pvt_key_path)}"
       timeout = "10s"
     }
-    source = "./files/td-agent-bit.service"
+    source = "${path.module}/files/td-agent-bit.service"
     destination = "/etc/systemd/system/td-agent-bit.service"
   }
 
