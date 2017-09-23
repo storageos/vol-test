@@ -171,8 +171,9 @@ function provision_do_nodes()
     ssh "root@${ip}" "export STORAGEOS_USERNAME=storageos >>/root/.bashrc"
     ssh "root@${ip}" "export STORAGEOS_PASSWORD=storageos >>/root/.bashrc"
 
-    echo "$droplet: Enable NBD"
-    ssh "root@${ip}" "modprobe nbd nbds_max=1024"
+    # Disable NBD pending http://jira.storageos.net/browse/DEV-1645
+    #echo "$droplet: Enable NBD"
+    #ssh "root@${ip}" "modprobe nbd nbds_max=1024"
   done
 }
 
