@@ -8,10 +8,33 @@ version="${VERSION:-latest}"
 cli_branch="${CLI_BRANCH:-}"
 cli_version="${CLI_VERSION:-0.0.12}"
 
+branch_env_file="./branch-env.txt"
+
+
+# Set up branch_env. The pipeline sets BRANCH_ENV to the current branch.
+#
+# - If BRANCH_ENV is not set in the environment:
+#   - Try to load from $branch_env_file in the pwd
+#   - Otherwise set using uuidgen
+# - Otherwise (BRANCH_ENV is set)
+#   - Use the first 16 characters of the given branch
+#
+# Note that branch_env is concatenated with the build number. This means
+# that we don't reuse tags for Pipeline builds (as the build number changes)
+# but we do for local runs. This is the intended behaviour - build separately
+# for each pipeline build, but reuse aggressively for local builds.
+#
 branch_env="${BRANCH_ENV:-branchnotset}"
 # Make sure branch_env has at most 16 characters.
 if [ "$branch_env" = "branchnotset" ]; then
-    branch_env="$(uuidgen | cut -c1-13)"
+    if [ -s $branch_env_file ]; then
+      branch_env="$(cat $branch_env_file)"
+      echo "Loaded preset branch_env='$branch_env'"
+    else
+      branch_env="$(uuidgen | cut -c1-13)"
+      echo "Saving branch_env='$branch_env'"
+      echo "$branch_env" >$branch_env_file
+    fi
 else
     branch_env="$(echo "$branch_env" | cut -c1-16)"
 fi
