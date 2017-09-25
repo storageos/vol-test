@@ -4,10 +4,11 @@ load "../../test_helper"
 
 @test "Test: Install plugin for driver (storageos) on node 2" {
   #skip "This test works, faster for rev without it"
-  run $prefix2 -t "docker plugin ls | grep storageos"
-  if [[ $status -eq 0 ]]; then
-    skip
-  fi
+  # Force restart until http://jira.storageos.net/browse/DEV-1677
+  #run $prefix2 -t "docker plugin ls | grep storageos"
+  #if [[ $status -eq 0 ]]; then
+  #  skip
+  #fi
 
   run $prefix2 docker plugin disable storageos -f
   run $prefix2 docker plugin rm storageos
