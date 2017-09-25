@@ -45,10 +45,16 @@ region=lon1
 size=2gb
 name_template="${tag}-${size}-${region}-"
 
-
 if [[ -f user_provision.sh ]] && [[  -z "$JENKINS_JOB" ]]; then
     echo "Loading user settings overrides from user_provision.sh"
     . ./user_provision.sh
+fi
+
+# Check $PLUGIN_NAME is properly-formed. It's easy to specify storageos/plugin:latest
+# when storageos/plugin is needed - use $VERSION for the tag.
+if [[ $plugin_name =~ : ]]; then
+  echo "PLUGIN_NAME='$plugin_name' doesn't look right, use PLUGIN_NAME to specify the image, and VERSION to specify the tag"
+  exit 1
 fi
 
 # The correct way to check out a ref from git depends on the
