@@ -6,12 +6,35 @@ declare -a ips
 plugin_name="${PLUGIN_NAME:-soegarots/plugin}"
 version="${VERSION:-latest}"
 cli_branch="${CLI_BRANCH:-}"
-cli_version="${CLI_VERSION:-0.0.11}"
+cli_version="${CLI_VERSION:-0.0.12}"
 
+branch_env_file="./branch-env.txt"
+
+
+# Set up branch_env. The pipeline sets BRANCH_ENV to the current branch.
+#
+# - If BRANCH_ENV is not set in the environment:
+#   - Try to load from $branch_env_file in the pwd
+#   - Otherwise set using uuidgen
+# - Otherwise (BRANCH_ENV is set)
+#   - Use the first 16 characters of the given branch
+#
+# Note that branch_env is concatenated with the build number. This means
+# that we don't reuse tags for Pipeline builds (as the build number changes)
+# but we do for local runs. This is the intended behaviour - build separately
+# for each pipeline build, but reuse aggressively for local builds.
+#
 branch_env="${BRANCH_ENV:-branchnotset}"
 # Make sure branch_env has at most 16 characters.
 if [ "$branch_env" = "branchnotset" ]; then
-    branch_env="$(uuidgen | cut -c1-13)"
+    if [ -s $branch_env_file ]; then
+      branch_env="$(cat $branch_env_file)"
+      echo "Loaded preset branch_env='$branch_env'"
+    else
+      branch_env="$(uuidgen | cut -c1-13)"
+      echo "Saving branch_env='$branch_env'"
+      echo "$branch_env" >$branch_env_file
+    fi
 else
     branch_env="$(echo "$branch_env" | cut -c1-16)"
 fi
@@ -22,11 +45,55 @@ region=lon1
 size=2gb
 name_template="${tag}-${size}-${region}-"
 
-
 if [[ -f user_provision.sh ]] && [[  -z "$JENKINS_JOB" ]]; then
     echo "Loading user settings overrides from user_provision.sh"
     . ./user_provision.sh
 fi
+
+# Check $PLUGIN_NAME is properly-formed. It's easy to specify storageos/plugin:latest
+# when storageos/plugin is needed - use $VERSION for the tag.
+if [[ $plugin_name =~ : ]]; then
+  echo "PLUGIN_NAME='$plugin_name' doesn't look right, use PLUGIN_NAME to specify the image, and VERSION to specify the tag"
+  exit 1
+fi
+
+# The correct way to check out a ref from git depends on the
+# type of reference.
+function git_checkout_ref() {
+  local newref
+  newref="$1"
+  if [ -z "$newref" ]; then
+    echo "Function usage: ${FUNCNAME[0]} refspec" >&2
+    exit 1
+  fi
+
+  if git show-ref --verify "refs/tags/$newref"; then
+    # It's a tag.
+    echo "Checkout tag '$newref'"
+    git checkout -b "$newref" "$newref"
+
+  elif git show-ref --verify "refs/heads/$newref"; then
+    # It's a branch.
+    echo "Checkout branch '$newref'"
+    git checkout "$newref"
+
+  else
+    # Don't know what it is, treat as branch and accept the consequences.
+    echo "Checkout unknown ref '$newref'"
+    git checkout "$newref"
+  fi
+}
+
+# Can't use arbitrary git branch/tag names as docker tags.
+function git_branch_to_tag() {
+  local branch
+	branch="${1:-}"
+	if [ -z "$branch" ]; then
+		error "Function usage: ${FUNCNAME[0]} BRANCH"
+	fi
+	echo -n "$branch" | tr -C 'a-zA-Z0-9' '_' | tr -s '_'
+	echo
+}
 
 function download_storageos_cli()
 {
@@ -40,6 +107,13 @@ function download_storageos_cli()
       curl --fail -sSL "https://github.com/storageos/go-cli/releases/download/${cli_version}/storageos_linux_amd64" > "$cli_binary"
       chmod +x "$cli_binary"
     fi
+
+    echo "Testing downloaded CLI using Docker"
+    if ! docker run -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help >/dev/null; then
+      echo "Failed to run storageos binary '$cli_binary'" >&2
+      exit 1
+    fi
+
   else
     # Build the binary.
     echo "Building CLI from source, branch ${cli_branch}"
@@ -49,13 +123,21 @@ function download_storageos_cli()
     git clone https://github.com/storageos/go-cli.git cli_build
     pushd cli_build
     if [ "$cli_branch" != master ]; then
-      git co -b "${cli_branch}" "${cli_branch}"
+      git_checkout_ref "$cli_branch"
     fi
-    docker build -t "cli_build:${cli_branch}" .
-    # Need to run a container and copy the file from it. Can't copy from the image.
-    build_id="$(docker run -d "cli_build:${cli_branch}" version)"
-    docker cp "${build_id}:/storageos" "${cli_binary}"
+    # Check we know how to build this binary.
+    if [ ! -f Dockerfile ]; then
+      echo "Ref '$cli_branch' has no Dockerfile, so we don't know how to build it" >&2
+      exit 1
+    fi
+    docker_tag="$(git_branch_to_tag "$cli_branch")"
+    docker build -t "cli_build:${docker_tag}" .
     popd
+    # Need to run a container and copy the file from it. Can't copy from the image.
+    build_id="$(docker run -d "cli_build:${docker_tag}" version)"
+    echo "Copy binary out of container"
+    docker cp "${build_id}:/storageos" "${cli_binary}"
+    chmod +x "${cli_binary}"
     rm -rf cli_build
   fi
 }
@@ -121,12 +203,13 @@ function provision_do_nodes()
     ssh "root@${ip}" "export DEBIAN_FRONTEND=noninteractive && apt-get -qqy update && apt-get -qqy -o=Dpkg::Use-Pty=0 install systemd-coredump"
 
     echo "$droplet: Copying StorageOS CLI"
-    scp -p "$cli_binary" r"oot@${ip}:/usr/local/bin/storageos"
+    scp -p "$cli_binary" "root@${ip}:/usr/local/bin/storageos"
     ssh "root@${ip}" "export STORAGEOS_USERNAME=storageos >>/root/.bashrc"
     ssh "root@${ip}" "export STORAGEOS_PASSWORD=storageos >>/root/.bashrc"
 
-    echo "$droplet: Enable NBD"
-    ssh "root@${ip}" "modprobe nbd nbds_max=1024"
+    # Disable NBD pending http://jira.storageos.net/browse/DEV-1645
+    #echo "$droplet: Enable NBD"
+    #ssh "root@${ip}" "modprobe nbd nbds_max=1024"
   done
 }
 
@@ -161,7 +244,7 @@ export DO_TAG="${tag}"
 EOF
 
   echo "SUCCESS!  Ready to run tests:"
-  echo "  ./run-volume-tests.sh"
+  echo "  ./run_volume_tests.sh"
   echo " Your environment credentials will be in test.env .. you may source it to interact with it manually"
 
 }
