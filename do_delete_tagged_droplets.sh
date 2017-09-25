@@ -8,7 +8,7 @@ progname="$(basename "$0")"
 doctl="doctl"
 doctl_json="$doctl -o json"
 jq="jq"
-jq_raw="$jq"
+jq_raw="$jq --raw-output"
 
 function usage() {
   echo "Usage: $progname [-f] [[TAG] ...]" >&2
@@ -24,7 +24,7 @@ function doctl_check() {
 
 function fetch_tags() {
   local tags
-  tags="$($doctl_json compute droplet list | $jq_raw --raw-output '.[] | .tags[]' | sort | uniq)"
+  tags="$($doctl_json compute droplet list | $jq_raw '.[] | select(.tags != null) | .tags[]' | sort | uniq)"
   echo "$tags"
 }
 
@@ -35,11 +35,20 @@ function delete_tag() {
     echo "Function usage: ${FUNCNAME[0]} TAG" >&2
     exit 1
   fi
-  tagged_name="$($doctl_json compute droplet list --tag-name "$tag" | $jq_raw --raw-output '.[] | .name' | sort)"
-  for name in $tagged_name; do
-    echo "Deleting $name"
-    $doctl compute droplet rm -f "$name"
+  tagged_id="$($doctl_json compute droplet list --tag-name "$tag" | $jq_raw '.[] | .id' | sort)"
+  for id in $tagged_id; do
+    echo "Deleting $id"
+    $doctl compute droplet rm -f "$id"
   done
+}
+
+pushd () {
+    echo "++ Directory '$*'"
+    command pushd "$@" > /dev/null
+}
+
+popd () {
+    command popd > /dev/null
 }
 
 doctl_check
