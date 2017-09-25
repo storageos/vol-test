@@ -14,7 +14,7 @@ fi
 # assume that the binary is built and available  in /bin
 pushd $PROJECT_DIR
 
-env BINARY_PATH=$PROJECT_DIR/bin/ VERSION=$STORAGEOS_VERSION JOBUID=$JOBUID "$PROJECT_DIR/lib/bash-templater/templater.sh" "$PROJECT_DIR/templates/perf-cluster.template" > $PROJECT_DIR/stress-cluster-$JOBUID.tf
+env BINARY_PATH=$PROJECT_DIR/bin/ VERSION=$STORAGEOS_VERSION JOBUID=$JOBUID "$PROJECT_DIR/lib/bash-templater/templater.sh" "$PROJECT_DIR/templates/perf-cluster.template" > $PROJECT_DIR/perf-cluster-$JOBUID.tf
 env INFLUX_CONN=$INFLUX_CONN JOBUID=$JOBUID "$PROJECT_DIR/lib/bash-templater/templater.sh" "$PROJECT_DIR/templates/systemd-service.template" > $PROJECT_DIR/configs/$JOBUID.service
 
 terraform get
@@ -26,6 +26,7 @@ terraform apply -var "tag=perf-$BUILD_TAG" \
   -var "do_token=$DO_TOKEN" \
   -var "pub_key_path=$PUBK_PATH" \
   -var "pvt_key_path=$PVTK_PATH" \
-  -var "ssh_fingerprint=$SSH_FINGERPRINT" 
-
+  -var "ssh_fingerprint=$SSH_FINGERPRINT" \
+  -var "log_user=$LOG_USER" \
+  -var "log_pass=$LOG_PASS" 
 popd

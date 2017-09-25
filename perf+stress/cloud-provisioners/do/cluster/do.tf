@@ -10,16 +10,24 @@ data "template_file" "cluster_config" {
 }
 
 data "template_file" "storageos-service" {
-  template = "${file("./files/storageos.service.tpl")}"
+  template = "${file("${path.module}/files/storageos.service.tpl")}"
 
   vars {
     docker_image = "storageos/node:${var.node_container_version}"
   }
 }
 
+data "template_file" "td_config" {
+  template = "${file("${path.module}/files/td-agent-bit.conf.tpl")}"
+  vars {
+    http_user = "${var.log_user}"
+    http_pass = "${var.log_pass}"
+  }
+}
+
 resource "digitalocean_droplet" "storageos-ubuntu" {
   count = "${var.cluster_size}"
-  name = "machine-${count.index}"
+  name = "${var.machine_prefix}-${count.index}"
   region = "lon1"
   size = "${var.machine_size}"
   image = "${var.ubuntu_version}"
@@ -43,8 +51,8 @@ resource "digitalocean_droplet" "storageos-ubuntu" {
       "apt -q -y update",
       "curl -fsSL get.docker.com -o get-docker.sh",
       "sh get-docker.sh",
-      "sudo modprobe nbd nbds_max=1024",
-      "echo 'options nbd nbds_max=1024' > /etc/modprobe.d/nbd.conf",
+      /* "sudo modprobe nbd nbds_max=1024", */
+      /* "echo 'options nbd nbds_max=1024' > /etc/modprobe.d/nbd.conf", */
       "mkdir -p /var/lib/storageos",
       "curl -sSL https://github.com/storageos/go-cli/releases/download/${var.cli_version}/storageos_linux_amd64 > /usr/local/bin/storageos",
       "chmod +x /usr/local/bin/storageos"
@@ -89,7 +97,8 @@ resource "null_resource" "install-apps" {
       private_key = "${file(var.pvt_key_path)}"
       timeout = "10s"
     }
-    source = "./files/td-agent-bit.conf"
+
+    content = "${data.template_file.td_config.rendered}"
     destination = "/etc/td-agent-bit/td-agent-bit.conf"
   }
 
@@ -100,7 +109,7 @@ resource "null_resource" "install-apps" {
       private_key = "${file(var.pvt_key_path)}"
       timeout = "10s"
     }
-    source = "./files/td-agent-bit.service"
+    source = "${path.module}/files/td-agent-bit.service"
     destination = "/etc/systemd/system/td-agent-bit.service"
   }
 

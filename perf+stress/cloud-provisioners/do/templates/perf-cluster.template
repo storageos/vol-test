@@ -3,11 +3,15 @@ module "storageos_cluster-{{JOBUID}}"  {
   source = "./cluster"
   do_token = "${var.do_token}"
   region="lon1"
+  machine_prefix="{{JOBUID}}"
   tag="${var.tag}-{{JOBUID}}"
   cluster_size="3"
+  machine_size="4gb"
   pvt_key_path="${var.pvt_key_path}"
   ubuntu_version="ubuntu-16-04-x64"
   cli_version="0.0.13"
+  log_user="${var.log_user}"
+  log_pass="${var.log_pass}"
   node_container_version="{{VERSION}}"
   ssh_fingerprint="${var.ssh_fingerprint}" 
 }
@@ -87,8 +91,10 @@ resource "null_resource" "copy-supervisor-config-{{JOBUID}}" {
       timeout = "10s"
     }
     
-    inline = ["DEBIAN_FRONTEND=noninteractive apt -q -y install fio jq build-essential bc", 
-      "chmod -R u+x /usr/local/bin/runner /usr/local/bin/fiord  ~/node-scripts/**  &&  systemctl enable {{JOBUID}} --now"]
+    inline = ["DEBIAN_FRONTEND=noninteractive apt -q -y install fio jq build-essential bc fping",
+      "chmod -R u+x /usr/local/bin/runner /usr/local/bin/storageos_bench /usr/local/bin/fiord  ~/node-scripts/** ",
+      "~/node-scripts/src/get-deps/install-deps.sh",
+      "systemctl enable {{JOBUID}} --now"]
     
   }
 }

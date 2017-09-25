@@ -7,6 +7,10 @@ variable "tag" {
   description = "tag on cluster instances"
 }
 
+variable "machine_prefix" {
+  description = "prefix for hostname on machines"
+}
+
 variable "cluster_size" {
   description = "size of storageos cluster"
 }
@@ -29,6 +33,14 @@ variable "region" {
 
 variable "ssh_fingerprint" {
   description = "SSH fingerprint of key to add to digital ocean, must be already in account"
+}
+
+variable "log_user" {
+  description = "http auth username for fluentd collector agent"
+}
+
+variable "log_pass" {
+  description = "http auth password for fluentd collector agent"
 }
 
 variable "do_token" {}

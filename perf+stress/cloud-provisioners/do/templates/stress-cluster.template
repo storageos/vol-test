@@ -2,6 +2,7 @@
 module "storageos_cluster-{{JOBUID}}"  {
   source = "./cluster"
   do_token = "${var.do_token}"
+  machine_prefix="{{JOBUID}}"
   region="lon1"
   tag="${var.tag}-{{JOBUID}}"
   cluster_size="3"
@@ -9,6 +10,8 @@ module "storageos_cluster-{{JOBUID}}"  {
   pvt_key_path="${var.pvt_key_path}"
   ubuntu_version="ubuntu-16-04-x64"
   cli_version="0.0.13"
+  log_user="${var.log_user}"
+  log_pass="${var.log_pass}"
   node_container_version="{{VERSION}}"
   ssh_fingerprint="${var.ssh_fingerprint}" 
 }

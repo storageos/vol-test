@@ -7,3 +7,6 @@ You can compute this `ssh-keygen -lf pubkey`
 Configuration also requires a digital ocean token for setting up the provider. you can also add an optional tag for your machines, these machines will be named machine-x where x is your position in the cluster.
 
 We tend to instantiate these as terraform modules and add our own customisations on top..
+
+We also added fluentd log collector to our base cluster and we use the templates in file/ to build it up.. In order to avoid issues with startup order of docker log collector we wrapped the storageos running
+process in the `files/storageos.service.tpl`
