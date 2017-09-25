@@ -42,6 +42,15 @@ function delete_tag() {
   done
 }
 
+pushd () {
+    echo "++ Directory '$*'"
+    command pushd "$@" > /dev/null
+}
+
+popd () {
+    command popd > /dev/null
+}
+
 doctl_check
 
 force_mode=0
