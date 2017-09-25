@@ -80,7 +80,7 @@ function download_storageos_cli()
     fi
 
     echo "Testing downloaded CLI using Docker"
-    if ! docker run -ti -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help; then
+    if ! docker run -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help; then
       echo "Failed to run storageos binary '$cli_binary'" >&2
       exit 1
     fi
