@@ -17,7 +17,7 @@
 # console with no explanation.
 
 # This incanation resolves symlinks etc.
-topdir="$(cd dirname $0; pwd)"
+topdir="$(cd $(dirname $0); pwd)"
 
 pushd () {
   local wd
