@@ -110,10 +110,6 @@ function provision_master_node()
   ssh "root@${ip}" "ulimit -c unlimited >/etc/profile.d/core_ulimit.sh"
   ssh "root@${ip}" "export DEBIAN_FRONTEND=noninteractive && apt-get -qqy update && apt-get -qqy -o=Dpkg::Use-Pty=0 install systemd-coredump"
 
-  # # Disable NBD pending http://jira.storageos.net/browse/DEV-1645
-  # echo "$droplet: Enable NBD"
-  # ssh "root@${ip}" "modprobe nbd nbds_max=1024"
-
   echo "$droplet: Remove ugly motd"
   ssh "root@${ip}" "rm -rf /etc/update-motd.d/99-one-click"
 }
