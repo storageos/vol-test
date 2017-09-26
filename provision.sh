@@ -170,29 +170,44 @@ function provision_do_nodes()
   fi
 
   for droplet in $droplets; do
-
+    status=""
+    echo -n "Waiting for active status on droplet $droplet"
     while [[ "$status" != "active" ]]; do
-      sleep 2
+      echo -n .
+      sleep 1
       status=$($doctl_auth compute droplet get "$droplet" --format Status --no-header)
     done
+    echo
 
-    sleep 5
-
-    TIMEOUT=100
+    TIMEOUT=30
     ip=''
+    echo -n "Fetching IP address for droplet $droplet"
     until [[ -n $ip ]] || [[ $TIMEOUT -eq 0 ]]; do
+      echo -n .
       ip=$($doctl_auth compute droplet get "$droplet" --format PublicIPv4 --no-header)
       ips+=($ip)
       TIMEOUT=$((--TIMEOUT))
     done
+    echo
 
-    echo "$droplet: Waiting for SSH on $ip"
-    TIMEOUT=100
-    until nc -zw 1 "$ip" 22 || [[ $TIMEOUT -eq 0 ]] ; do
-      sleep 2
+    if [ $TIMEOUT -eq 0 ]; then
+      echo "Failed to fetch droplet IP address" >&2
+      exit 1
+    fi
+
+    echo -n "$droplet: Waiting for SSH on $ip"
+    TIMEOUT=120
+    until nc -z -w1 "$ip" 22 || [[ $TIMEOUT -eq 0 ]] ; do
+      echo -n .
+      sleep 1
       TIMEOUT=$((--TIMEOUT))
     done
-    sleep 5
+    echo
+
+    if [ $TIMEOUT -eq 0 ]; then
+      echo "SSH didn't appear to start on $ip" >&2
+      exit 1
+    fi
 
     ssh-keyscan -H "$ip" >> ~/.ssh/known_hosts
 
