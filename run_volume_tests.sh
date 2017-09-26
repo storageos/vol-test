@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# shellcheck disable=SC2086
 
 # Test wrapper script.
 # You can run with environment variables, or
@@ -14,18 +16,27 @@
 # Wrap pushd and popd so directory names don't appear on the
 # console with no explanation.
 
+# This incanation resolves symlinks etc.
+topdir="$(cd dirname $0; pwd)"
+
 pushd () {
-    echo "++ Directory '$*'"
-    command pushd "$@" > /dev/null
+  local wd
+  command pushd "$@" > /dev/null
+  # Print the pwd relative to the directory of $topdir (strip topdir as a prefix).
+  wd="$(pwd)"
+  echo "++ Directory '.${wd#$topdir}'"
 }
 
 popd () {
-    command popd > /dev/null
+  command popd > /dev/null
 }
 
 if ! [[ -f user_provision.sh ]]; then
   BATS_OPTS='-u'
 fi
+
+# Always show progress. Even pipelines benefit from seeing what's going on.
+BATS_OPTS="$BATS_OPTS -p"
 
 echo "Loading test.env"
 . ./test.env
@@ -53,8 +64,9 @@ pushd ./install
   bats $BATS_OPTS .
 popd
 
-echo "Pause for cluster init"
-sleep 30
+cluster_delay=30
+echo "Pause ${cluster_delay}s for cluster init"
+sleep $cluster_delay
 echo "End cluster init pause"
 
 echo "-----------------------------"
