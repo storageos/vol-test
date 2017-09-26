@@ -216,6 +216,15 @@ function provision_do_nodes()
     ssh "root@${ip}" "export STORAGEOS_USERNAME=storageos >>/root/.bashrc"
     ssh "root@${ip}" "export STORAGEOS_PASSWORD=storageos >>/root/.bashrc"
 
+    ## Add configuration items that aren't meant for the snapshot here.
+    ##
+    ## E.g. enable/disable NBD
+
+    # # Disable NBD pending http://jira.storageos.net/browse/DEV-1645
+    # echo "$droplet: Enable NBD"
+    # ssh "root@${ip}" "modprobe nbd nbds_max=1024"
+
+    ## End post-snapshot configuration items.
   done
 }
 
