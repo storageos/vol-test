@@ -30,10 +30,11 @@ wget -qO- https://github.com/digitalocean/doctl/releases/download/v1.6.1/doctl-1
 sudo mv ./doctl /usr/local/bin
 ```
 
+
+
 ## Provisioning
 
-
-### as a standalone run of the automated tests (currently in digital ocean):
+### As a standalone run of the automated tests (currently in digital ocean):
 
 ### SSH key
 
@@ -56,17 +57,29 @@ SSHKEY=5b:2a:e0:de:ad:be:ef:de:ad:be:ef:de:ad:be:ef:79
 
 Add a valid do api key in `user_provision.sh` as `DO_TOKEN=X`
 
-### bootstrapping the cluster
+## Snapshot creation
+
+To speed up builds, we perform some always-run setup steps once and create a snapshot. Subsequent builds are based on that snapshot to save on build time.
+
+Normally the snapshot will be present and you can skip this step. However, if something changes or you just want to check the ground on which you stand, you can create a new snapshot. This will replace the existing one and could dirsupt other users, so don't do it lightly or in the middle of a busy work day.
+
+You need `DO_TOKEN` and `SSHKEY` set in user_provision.sh. Then, create a new snapshot with:
+
+```
+./make_do_snapshot.sh
+```
+
+### Bootstrapping the cluster
 
 Depending on whether machines need to be created from scratch in digital ocean also set `BOOTSTRAP` env variable and run `provision.sh` from top level directory.
 You can check if the cluster has been built before or not by verifying are no machines tagged vol-test or consul-vol-test in the Digital Ocean shared account.
 
 This will create 3 node cluster in digital ocean and a separate consul VM running a consul container.
 
-On subsequent runs or if you can see that VMS with tags vol-test and consul-node are 
+On subsequent runs or if you can see that VMS with tags vol-test and consul-node are
 already created unset `BOOTSTRAP` and run `provision.sh` this will have the advantage of reusing the VMS and your tests will be quicker.
 
-### as a Jenkins run:
+### As a Jenkins run:
 
 When the script is run as part of a Jenkins run these vars have to be set:
 
@@ -75,7 +88,7 @@ When the script is run as part of a Jenkins run these vars have to be set:
 1. The md5 fingerprint of the JENKINS SSH key as 'SSHKEY' which should have been previously added to DO
 1. `JENKINS_JOB` has to be set to "true"
 
-You can also optionally set the 
+You can also optionally set the
 `PLUGIN_NAME`, `VERSION` or `CLI_VERSION` environment variables for plugin name, version and CLI version
 respectively.
 
@@ -83,8 +96,8 @@ This will recreate the cluster from scratch every time which currently takes a c
 
 ## Running
 
-source the test.env script as prompted after provisioning, and then 
-call ./run_volume_test.sh from the top level.
+source the test.env script as prompted after provisioning, and then
+call `./run_volume_test.sh` from the top level.
 
 - Configuration:
 
@@ -126,9 +139,9 @@ bats singlenode.bats
 
 ## Destroying the cluster
 
-Just run the './destroy.sh' script this will destroy all machines with the right tags.. 
+Just run the './destroy.sh' script this will destroy all machines with the right tags.
 
-You need to pass a build number and jenkins do token as well for appropriate jenkins cleanup
+You need to pass a build number and jenkins do token as well for appropriate jenkins cleanup.
 
 We assume that jenkins runs will be doing this at every run and recreating.
 

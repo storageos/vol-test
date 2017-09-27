@@ -6,12 +6,35 @@ declare -a ips
 plugin_name="${PLUGIN_NAME:-soegarots/plugin}"
 version="${VERSION:-latest}"
 cli_branch="${CLI_BRANCH:-}"
-cli_version="${CLI_VERSION:-0.0.12}"
+cli_version="${CLI_VERSION:-0.0.13}"
 
+branch_env_file="./branch-env.txt"
+
+
+# Set up branch_env. The pipeline sets BRANCH_ENV to the current branch.
+#
+# - If BRANCH_ENV is not set in the environment:
+#   - Try to load from $branch_env_file in the pwd
+#   - Otherwise set using uuidgen
+# - Otherwise (BRANCH_ENV is set)
+#   - Use the first 16 characters of the given branch
+#
+# Note that branch_env is concatenated with the build number. This means
+# that we don't reuse tags for Pipeline builds (as the build number changes)
+# but we do for local runs. This is the intended behaviour - build separately
+# for each pipeline build, but reuse aggressively for local builds.
+#
 branch_env="${BRANCH_ENV:-branchnotset}"
 # Make sure branch_env has at most 16 characters.
 if [ "$branch_env" = "branchnotset" ]; then
-    branch_env="$(uuidgen | cut -c1-13)"
+    if [ -s $branch_env_file ]; then
+      branch_env="$(cat $branch_env_file)"
+      echo "Loaded preset branch_env='$branch_env'"
+    else
+      branch_env="$(uuidgen | cut -c1-13)"
+      echo "Saving branch_env='$branch_env'"
+      echo "$branch_env" >$branch_env_file
+    fi
 else
     branch_env="$(echo "$branch_env" | cut -c1-16)"
 fi
@@ -21,11 +44,18 @@ tag="vol-test-${build_id}"
 region=lon1
 size=2gb
 name_template="${tag}-${size}-${region}-"
-
+snapshot_name="vol-test-snapshot"
 
 if [[ -f user_provision.sh ]] && [[  -z "$JENKINS_JOB" ]]; then
     echo "Loading user settings overrides from user_provision.sh"
     . ./user_provision.sh
+fi
+
+# Check $PLUGIN_NAME is properly-formed. It's easy to specify storageos/plugin:latest
+# when storageos/plugin is needed - use $VERSION for the tag.
+if [[ $plugin_name =~ : ]]; then
+  echo "PLUGIN_NAME='$plugin_name' doesn't look right, use PLUGIN_NAME to specify the image, and VERSION to specify the tag"
+  exit 1
 fi
 
 # The correct way to check out a ref from git depends on the
@@ -78,6 +108,14 @@ function download_storageos_cli()
       curl --fail -sSL "https://github.com/storageos/go-cli/releases/download/${cli_version}/storageos_linux_amd64" > "$cli_binary"
       chmod +x "$cli_binary"
     fi
+
+    echo "Testing downloaded CLI using Docker"
+    if ! docker run -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help >/dev/null; then
+      echo "Failed to run storageos binary '$cli_binary', removing it" >&2
+      rm "$cli_binary"
+      exit 1
+    fi
+
   else
     # Build the binary.
     echo "Building CLI from source, branch ${cli_branch}"
@@ -132,48 +170,74 @@ function provision_do_nodes()
   fi
 
   for droplet in $droplets; do
-
+    status=""
+    echo -n "Waiting for active status on droplet $droplet"
     while [[ "$status" != "active" ]]; do
-      sleep 2
+      echo -n .
+      sleep 1
       status=$($doctl_auth compute droplet get "$droplet" --format Status --no-header)
     done
+    echo
 
-    sleep 5
-
-    TIMEOUT=100
+    TIMEOUT=30
     ip=''
+    echo -n "Fetching IP address for droplet $droplet"
     until [[ -n $ip ]] || [[ $TIMEOUT -eq 0 ]]; do
+      echo -n .
       ip=$($doctl_auth compute droplet get "$droplet" --format PublicIPv4 --no-header)
       ips+=($ip)
       TIMEOUT=$((--TIMEOUT))
     done
+    echo
 
-    echo "$droplet: Waiting for SSH on $ip"
-    TIMEOUT=100
-    until nc -zw 1 "$ip" 22 || [[ $TIMEOUT -eq 0 ]] ; do
-      sleep 2
+    if [ $TIMEOUT -eq 0 ]; then
+      echo "Failed to fetch droplet IP address" >&2
+      exit 1
+    fi
+
+    echo -n "$droplet: Waiting for SSH on $ip"
+    TIMEOUT=120
+    until nc -z -w1 "$ip" 22 || [[ $TIMEOUT -eq 0 ]] ; do
+      echo -n .
+      sleep 1
       TIMEOUT=$((--TIMEOUT))
     done
-    sleep 5
+    echo
+
+    if [ $TIMEOUT -eq 0 ]; then
+      echo "SSH didn't appear to start on $ip" >&2
+      exit 1
+    fi
 
     ssh-keyscan -H "$ip" >> ~/.ssh/known_hosts
-    echo "$droplet: Disabling firewall"
-    until ssh "root@${ip}" "/usr/sbin/ufw disable"; do
-      sleep 2
-    done
-
-    echo "$droplet: Enabling core dumps"
-    ssh "root@${ip}" "ulimit -c unlimited >/etc/profile.d/core_ulimit.sh"
-    ssh "root@${ip}" "export DEBIAN_FRONTEND=noninteractive && apt-get -qqy update && apt-get -qqy -o=Dpkg::Use-Pty=0 install systemd-coredump"
 
     echo "$droplet: Copying StorageOS CLI"
     scp -p "$cli_binary" "root@${ip}:/usr/local/bin/storageos"
     ssh "root@${ip}" "export STORAGEOS_USERNAME=storageos >>/root/.bashrc"
     ssh "root@${ip}" "export STORAGEOS_PASSWORD=storageos >>/root/.bashrc"
 
-    echo "$droplet: Enable NBD"
-    ssh "root@${ip}" "modprobe nbd nbds_max=1024"
+    ## Add configuration items that aren't meant for the snapshot here.
+    ##
+    ## E.g. enable/disable NBD
+
+    # # Disable NBD pending http://jira.storageos.net/browse/DEV-1645
+    # echo "$droplet: Enable NBD"
+    # ssh "root@${ip}" "modprobe nbd nbds_max=1024"
+
+    ## End post-snapshot configuration items.
   done
+}
+
+function fetch_snapshot_id() {
+  # Requires: snapshot_name
+  # Exports: snapshot_id
+
+  echo "Fetching ID for snapshot '$snapshot_name'"
+  snapshot_id=$($doctl_auth compute image list-user --format Name,ID | grep -E "^${snapshot_name} " | awk '{print $2}')
+  if [ -z "$snapshot_id" ]; then
+    echo "Failed to fetch ID for snapshot name '$snapshot_name'"
+    exit 1
+  fi
 }
 
 function do_auth_init()
@@ -182,7 +246,7 @@ function do_auth_init()
   # WE DO NOT MAKE USE OF DOCTL AUTH INIT but rather append the token to every request
   # this is because in a non-interactive jenkins job, any way of passing input (Heredoc, redirection) are ignored
   # with an 'unknown terminal' error we instead alias doctl and use the -t option everywhere
-  export doctl_auth
+  export doctl_auth snapshot_name
 
   if [[ -z $DO_TOKEN ]] ; then
     echo "please ensure that your DO_TOKEN is entered in user_provision.sh"
@@ -192,7 +256,11 @@ function do_auth_init()
   doctl_auth="doctl -t $DO_TOKEN"
 
   export image
-  image=$($doctl_auth compute image list --public  | grep docker-16-04 | awk '{ print $1 }') # ubuntu on linux img
+  # image=$($doctl_auth compute image list --public  | grep docker-16-04 | awk '{ print $1 }') # ubuntu on linux img
+
+  fetch_snapshot_id
+  echo "Using image $snapshot_id"
+  image="$snapshot_id"
 }
 
 function write_config()
