@@ -8,10 +8,33 @@ version="${VERSION:-latest}"
 cli_branch="${CLI_BRANCH:-}"
 cli_version="${CLI_VERSION:-0.0.12}"
 
+branch_env_file="./branch-env.txt"
+
+
+# Set up branch_env. The pipeline sets BRANCH_ENV to the current branch.
+#
+# - If BRANCH_ENV is not set in the environment:
+#   - Try to load from $branch_env_file in the pwd
+#   - Otherwise set using uuidgen
+# - Otherwise (BRANCH_ENV is set)
+#   - Use the first 16 characters of the given branch
+#
+# Note that branch_env is concatenated with the build number. This means
+# that we don't reuse tags for Pipeline builds (as the build number changes)
+# but we do for local runs. This is the intended behaviour - build separately
+# for each pipeline build, but reuse aggressively for local builds.
+#
 branch_env="${BRANCH_ENV:-branchnotset}"
 # Make sure branch_env has at most 16 characters.
 if [ "$branch_env" = "branchnotset" ]; then
-    branch_env="$(uuidgen | cut -c1-13)"
+    if [ -s $branch_env_file ]; then
+      branch_env="$(cat $branch_env_file)"
+      echo "Loaded preset branch_env='$branch_env'"
+    else
+      branch_env="$(uuidgen | cut -c1-13)"
+      echo "Saving branch_env='$branch_env'"
+      echo "$branch_env" >$branch_env_file
+    fi
 else
     branch_env="$(echo "$branch_env" | cut -c1-16)"
 fi
@@ -22,10 +45,16 @@ region=lon1
 size=2gb
 name_template="${tag}-${size}-${region}-"
 
-
 if [[ -f user_provision.sh ]] && [[  -z "$JENKINS_JOB" ]]; then
     echo "Loading user settings overrides from user_provision.sh"
     . ./user_provision.sh
+fi
+
+# Check $PLUGIN_NAME is properly-formed. It's easy to specify storageos/plugin:latest
+# when storageos/plugin is needed - use $VERSION for the tag.
+if [[ $plugin_name =~ : ]]; then
+  echo "PLUGIN_NAME='$plugin_name' doesn't look right, use PLUGIN_NAME to specify the image, and VERSION to specify the tag"
+  exit 1
 fi
 
 # The correct way to check out a ref from git depends on the
@@ -80,7 +109,7 @@ function download_storageos_cli()
     fi
 
     echo "Testing downloaded CLI using Docker"
-    if ! docker run -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help; then
+    if ! docker run -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help >/dev/null; then
       echo "Failed to run storageos binary '$cli_binary'" >&2
       exit 1
     fi

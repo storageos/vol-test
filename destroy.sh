@@ -2,6 +2,7 @@
 
 set -e
 
+echo "Loading test.env"
 . test.env || true
 
 tag="${DO_TAG}"
