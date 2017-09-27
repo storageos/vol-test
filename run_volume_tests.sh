@@ -17,9 +17,9 @@ fi
 
 . ./test.env
 
-pushd node-join
+pushd startup-tests
 echo "-----------------------------"
-echo "running node join tests"
+echo "running startup procedure tests"
 echo "-----------------------------"
   bats $BATS_OPTS .
 popd
