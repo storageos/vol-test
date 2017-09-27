@@ -44,6 +44,7 @@ tag="vol-test-${build_id}"
 region=lon1
 size=2gb
 name_template="${tag}-${size}-${region}-"
+snapshot_name="vol-test-snapshot"
 
 if [[ -f user_provision.sh ]] && [[  -z "$JENKINS_JOB" ]]; then
     echo "Loading user settings overrides from user_provision.sh"
@@ -110,7 +111,8 @@ function download_storageos_cli()
 
     echo "Testing downloaded CLI using Docker"
     if ! docker run -v "$(pwd)":/mnt ubuntu:xenial /mnt/"$cli_binary" --help >/dev/null; then
-      echo "Failed to run storageos binary '$cli_binary'" >&2
+      echo "Failed to run storageos binary '$cli_binary', removing it" >&2
+      rm "$cli_binary"
       exit 1
     fi
 
@@ -168,49 +170,74 @@ function provision_do_nodes()
   fi
 
   for droplet in $droplets; do
-
+    status=""
+    echo -n "Waiting for active status on droplet $droplet"
     while [[ "$status" != "active" ]]; do
-      sleep 2
+      echo -n .
+      sleep 1
       status=$($doctl_auth compute droplet get "$droplet" --format Status --no-header)
     done
+    echo
 
-    sleep 5
-
-    TIMEOUT=100
+    TIMEOUT=30
     ip=''
+    echo -n "Fetching IP address for droplet $droplet"
     until [[ -n $ip ]] || [[ $TIMEOUT -eq 0 ]]; do
+      echo -n .
       ip=$($doctl_auth compute droplet get "$droplet" --format PublicIPv4 --no-header)
       ips+=($ip)
       TIMEOUT=$((--TIMEOUT))
     done
+    echo
 
-    echo "$droplet: Waiting for SSH on $ip"
-    TIMEOUT=100
-    until nc -zw 1 "$ip" 22 || [[ $TIMEOUT -eq 0 ]] ; do
-      sleep 2
+    if [ $TIMEOUT -eq 0 ]; then
+      echo "Failed to fetch droplet IP address" >&2
+      exit 1
+    fi
+
+    echo -n "$droplet: Waiting for SSH on $ip"
+    TIMEOUT=120
+    until nc -z -w1 "$ip" 22 || [[ $TIMEOUT -eq 0 ]] ; do
+      echo -n .
+      sleep 1
       TIMEOUT=$((--TIMEOUT))
     done
-    sleep 5
+    echo
+
+    if [ $TIMEOUT -eq 0 ]; then
+      echo "SSH didn't appear to start on $ip" >&2
+      exit 1
+    fi
 
     ssh-keyscan -H "$ip" >> ~/.ssh/known_hosts
-    echo "$droplet: Disabling firewall"
-    until ssh "root@${ip}" "/usr/sbin/ufw disable"; do
-      sleep 2
-    done
-
-    echo "$droplet: Enabling core dumps"
-    ssh "root@${ip}" "ulimit -c unlimited >/etc/profile.d/core_ulimit.sh"
-    ssh "root@${ip}" "export DEBIAN_FRONTEND=noninteractive && apt-get -qqy update && apt-get -qqy -o=Dpkg::Use-Pty=0 install systemd-coredump"
 
     echo "$droplet: Copying StorageOS CLI"
     scp -p "$cli_binary" "root@${ip}:/usr/local/bin/storageos"
     ssh "root@${ip}" "export STORAGEOS_USERNAME=storageos >>/root/.bashrc"
     ssh "root@${ip}" "export STORAGEOS_PASSWORD=storageos >>/root/.bashrc"
 
-    # Disable NBD pending http://jira.storageos.net/browse/DEV-1645
-    #echo "$droplet: Enable NBD"
-    #ssh "root@${ip}" "modprobe nbd nbds_max=1024"
+    ## Add configuration items that aren't meant for the snapshot here.
+    ##
+    ## E.g. enable/disable NBD
+
+    # # Disable NBD pending http://jira.storageos.net/browse/DEV-1645
+    # echo "$droplet: Enable NBD"
+    # ssh "root@${ip}" "modprobe nbd nbds_max=1024"
+
+    ## End post-snapshot configuration items.
   done
+}
+
+function fetch_snapshot_id() {
+  # Requires: snapshot_name
+  # Exports: snapshot_id
+
+  echo "Fetching ID for snapshot '$snapshot_name'"
+  snapshot_id=$($doctl_auth compute image list-user --format Name,ID | grep -E "^${snapshot_name} " | awk '{print $2}')
+  if [ -z "$snapshot_id" ]; then
+    echo "Failed to fetch ID for snapshot name '$snapshot_name'"
+    exit 1
+  fi
 }
 
 function do_auth_init()
@@ -219,7 +246,7 @@ function do_auth_init()
   # WE DO NOT MAKE USE OF DOCTL AUTH INIT but rather append the token to every request
   # this is because in a non-interactive jenkins job, any way of passing input (Heredoc, redirection) are ignored
   # with an 'unknown terminal' error we instead alias doctl and use the -t option everywhere
-  export doctl_auth
+  export doctl_auth snapshot_name
 
   if [[ -z $DO_TOKEN ]] ; then
     echo "please ensure that your DO_TOKEN is entered in user_provision.sh"
@@ -229,7 +256,11 @@ function do_auth_init()
   doctl_auth="doctl -t $DO_TOKEN"
 
   export image
-  image=$($doctl_auth compute image list --public  | grep docker-16-04 | awk '{ print $1 }') # ubuntu on linux img
+  # image=$($doctl_auth compute image list --public  | grep docker-16-04 | awk '{ print $1 }') # ubuntu on linux img
+
+  fetch_snapshot_id
+  echo "Using image $snapshot_id"
+  image="$snapshot_id"
 }
 
 function write_config()
