@@ -2,8 +2,8 @@
 Description=Runner
 
 [Service]
-Environment=INFLUX_CONN=${influxdb_uri}
-ExecStart=/usr/local/bin/runner start --jobs /var/lib/jobs/${type}/${profile}
+EnvironmentFile=/etc/default/runner
+ExecStart=/usr/local/bin/runner start --jobs /var/lib/jobs/${type}/${profile}.yaml
 
 [Install]
 WantedBy=multi-user.target

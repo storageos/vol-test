@@ -1,11 +1,13 @@
 [global]
+bs=4k
 ioengine=libaio
+iodepth=4
 direct=1
 random_generator=tausworthe
 random_distribution=random
-allow_file_create=0
+rw=randwrite
 percentage_random=100
 runtime=10
 
-[stress-test-basic]
+[randwrite]
 numjobs=1
