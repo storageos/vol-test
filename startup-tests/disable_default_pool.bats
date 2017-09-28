@@ -8,7 +8,7 @@ load ../test_helper
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver CLUSTER_ID=$id LABEL_ADD='disableDefaultPool=true'
+    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$id LABEL_ADD='disableDefaultPool=true'
     assert_success
   done
 
@@ -46,13 +46,13 @@ load ../test_helper
 @test "Disable default pool, single node [INSTALL]" {
   id=$($prefix storageos cluster create)
 
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver CLUSTER_ID=$id LABEL_ADD='disableDefaultPool=true'
+  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$id LABEL_ADD='disableDefaultPool=true'
   assert_success
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver CLUSTER_ID=$id
+  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$id
   assert_success
 
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver CLUSTER_ID=$id
+  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$id
   assert_success
 
   sleep 20
