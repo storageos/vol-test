@@ -4,7 +4,7 @@
 load ../test_helper
 
 @test "Disable default pool, all nodes [INSTALL]" {
-  id=$(storageos cluster create)
+  id=$($prefix storageos cluster create)
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"
   do
@@ -44,7 +44,7 @@ load ../test_helper
 }
 
 @test "Disable default pool, single node [INSTALL]" {
-  id=$(storageos cluster create)
+  id=$($prefix storageos cluster create)
 
   run $prefix docker plugin install --alias storageos --grant-all-permissions $driver CLUSTER_ID=$id LABEL_ADD='disableDefaultPool=true'
   assert_success
