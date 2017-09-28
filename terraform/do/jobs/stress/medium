@@ -1,0 +1,17 @@
+description: medium level of stress testing
+jobs:
+  run-kernel-compile:
+     exec: "bash"
+     args: ["-c", "~/node-scripts/kernel-compile/run-kernel-compile.sh"]
+  run-kernel-compile-container:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/kernel-compile/run-kernel-compile-container.sh"]     
+  run-fio-ro-raw-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run-fio.sh basic 4k raw"]
+  run-fio-ro-rep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run-fio.sh basic 4k 1-rep"]
+  run-fio-check-raw-8mb:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run-fio.sh checked 8192k no-cache"] 
