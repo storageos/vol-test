@@ -1,14 +1,26 @@
 variable "build" {
-  description = "build reference"
+  description = "build reference (e.g. Jenkins job id)"
   default = "unset"
 }
 
+variable "os" {
+  description = "OS version"
+  default = "ubuntu-16-04-x64"
+}
+
+variable "memory" {
+  description = "machine RAM size (eg. 2gb)"
+  default = "2gb"
+}
+
 variable "type" {
-  description = "build type, stress or benchmark"
+  description = "build type: stress or benchmark"
+  default = ""
 }
 
 variable "profile" {
-  description = "test profile, low, medium, high or custom"
+  description = "test profile: default, low, or high"
+  default = "default"
 }
 
 variable "storageos_version" {
@@ -16,20 +28,26 @@ variable "storageos_version" {
   default = "0.8.1"
 }
 
+variable "storageos_cli_version" {
+  description = "storageos cli version"
+  default = "0.0.13"
+}
+
+variable "nodes" {
+  description = "number of nodes in cluster"
+  default = "3"
+}
+
+variable "region" {
+  description = "cloud provider region"
+  default = "lon1"
+}
+
 
 variable "do_token" {}
 variable "pub_key_path" {}
 variable "pvt_key_path" {}
-
-# variable "log_user" {
-#   description = "http auth username for fluentd collector agent"
-# }
-
-# variable "log_pass" {
-#   description = "http auth password for fluentd collector agent"
-# }
 variable "ssh_fingerprint" {}
-
 
 variable "es_host" {
   description = "Elasticsearch host for fluentd collector agent"

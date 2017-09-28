@@ -2,13 +2,13 @@
 module "storageos_cluster"  {
   source = "./cluster"
   do_token = "${var.do_token}"
-  region="lon1"
+  region="${var.region}"
   tag="${var.type}-${var.build}"
-  cluster_size="3"
-  machine_size="4gb"
+  cluster_size="${var.nodes}"
+  machine_size="${var.memory}"
   pvt_key_path="${var.pvt_key_path}"
-  ubuntu_version="ubuntu-16-04-x64"
-  cli_version="0.0.13"
+  ubuntu_version="${var.os}"
+  cli_version="${var.storageos_cli_version}"
   es_host="${var.es_host}"
   es_port="${var.es_port}"
   es_user="${var.es_user}"
@@ -58,6 +58,23 @@ resource "null_resource" "runner" {
     source = "./jobs"
     destination = "/var/lib/jobs"
   }
+
+  /* store useful vars for attaching to metrics */
+  provisioner "file" {
+    content = <<EOF
+HOSTNAME="${element(module.storageos_cluster.hostnames, count.index)}"
+INFLUXDB_URI="${var.influxdb_uri}"
+STORAGEOS_USERNAME=storageos
+STORAGEOS_PASSWORD=storageos
+TYPE="${var.type}"
+PROFILE="${var.profile}"
+CPU=1
+MEMORY="4gb"
+PRODUCT="storageos"
+VERSION="${var.storageos_version}"
+EOF
+    destination = "/etc/default/runner"
+  }
   
   /* copy runner systemd file */
   provisioner "file" {
@@ -73,7 +90,7 @@ resource "null_resource" "runner" {
 
   provisioner "remote-exec" {
     inline = ["DEBIAN_FRONTEND=noninteractive apt -q -y install fio jq build-essential bc fping",
-      "chmod -R u+x /usr/local/bin/runner /usr/local/bin/storageos_bench /usr/local/bin/fiord  ~/node-scripts/** ",
+      "chmod -R u+x /usr/local/bin/* ~/node-scripts/**",
       "~/node-scripts/src/get-deps/install-deps.sh",
       "systemctl enable runner --now"
     ]
