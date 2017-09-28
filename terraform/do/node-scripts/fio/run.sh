@@ -35,6 +35,8 @@ if [[ -n $INFLUXDB_URI ]]; then
   [ -n $HOSTNAME ] && TAGS="$TAGS,hostname=${HOSTNAME}"
   [ -n $CPU ] && TAGS="$TAGS,cpus=${CPU}"
   [ -n $MEMORY ] && TAGS="$TAGS,memory=${MEMORY}"
+  [ -n $PRODUCT ] && TAGS="$TAGS,product=${PRODUCT}"
+  [ -n $VERSION ] && TAGS="$TAGS,version=${VERSION}"
   OUTPUT="fiord influxdb --uri $INFLUXDB_URI --db=${INFLUXDB_DBNAME:-fio} --tags $TAGS"
 fi
 
