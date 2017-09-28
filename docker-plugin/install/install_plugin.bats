@@ -12,8 +12,8 @@ CID_FILE=$BATS_TEST_DIRNAME/CID
 }
 
 @test "Verify cluster id" {
- export CLUSTER_ID=$(cat $CID_FILE)
- echo $CLUSTER_ID | egrep '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+ export JOIN=$(cat $CID_FILE)
+ echo $JOIN | egrep '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
 }
 
 @test "Install plugin on 1st node" {
@@ -25,7 +25,7 @@ CID_FILE=$BATS_TEST_DIRNAME/CID
 
 
  #set -x
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver CLUSTER_ID=$(cat $CID_FILE)
+  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(cat $CID_FILE)
   #set +x
   assert_success
 }
@@ -37,7 +37,7 @@ CID_FILE=$BATS_TEST_DIRNAME/CID
     skip
   fi
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver CLUSTER_ID=$(cat $CID_FILE)
+  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(cat $CID_FILE)
   assert_success
 }
 
@@ -48,6 +48,6 @@ CID_FILE=$BATS_TEST_DIRNAME/CID
     skip
   fi
 
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver "CLUSTER_ID=$(cat $CID_FILE)"
+  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver "JOIN=$(cat $CID_FILE)"
   assert_success
 }

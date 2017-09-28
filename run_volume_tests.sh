@@ -56,6 +56,13 @@ Host tag      DO_TAG    $DO_TAG
 ==
 EOF
 
+pushd node-join
+echo "-----------------------------"
+echo "running node join tests"
+echo "-----------------------------"
+  bats $BATS_OPTS .
+popd
+
 pushd docker-plugin
 echo "-----------------------------"
 echo "installing plugin on 3 nodes"
