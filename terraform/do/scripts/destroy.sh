@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if [ $1 == "-f" ]; then
+if [[ $1 == "-f" ]]; then
   FORCE="-force"
 fi
 
