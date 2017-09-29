@@ -15,5 +15,5 @@ if ! which terraform; then
 fi
 
 for provider in $IAAS; do
-    $BASE/terraform/${provider}/scripts/destroy.sh 
+  $BASE/terraform/${provider}/scripts/destroy.sh $@
 done 
