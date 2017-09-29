@@ -26,20 +26,38 @@ if [ $CACHE == "false" ]; then
 fi
 
 storageos $cli_auth volume create $LABELS $volname
+if [ $? -ne 0 ]; then
+  (>2& echo "volume create failed")
+  exit 1
+fi
 
 volid=$(storageos $CREDS volume inspect default/$volname --format {{.ID}})
 
-OUTPUT="tee -a"
+out=$(mktemp)
+fio --output-format=json $DIR/$TEST_TYPE.fio --bs=$BLKSIZE --filename /var/lib/storageos/volumes/$volid > $out
+if [ $? -ne 0 ]; then
+  (>2& echo "fio command failed")
+  exit 2
+fi
+
 if [[ -n $INFLUXDB_URI ]]; then
-  TAGS="bs=${BLKSIZE},type=${TEST_TYPE},replicas=${REPLICAS},cache=${CACHE}"
-  [ -n $HOSTNAME ] && TAGS="$TAGS,hostname=${HOSTNAME}"
+  TAGS="volname=${volname}"
+  [ -n $BLKSIZE ] && TAGS="$TAGS,blocksize=${BLKSIZE}"
+  [ -n $REPLICAS ] && TAGS="$TAGS,replicas=${REPLICAS}"
+  [ -n $CACHE ] && TAGS="$TAGS,cache=${CACHE}"
+  [ -n $HOSTNAME ] && TAGS="$TAGS,host=${HOSTNAME}"
   [ -n $CPU ] && TAGS="$TAGS,cpus=${CPU}"
   [ -n $MEMORY ] && TAGS="$TAGS,memory=${MEMORY}"
   [ -n $PRODUCT ] && TAGS="$TAGS,product=${PRODUCT}"
   [ -n $VERSION ] && TAGS="$TAGS,version=${VERSION}"
-  OUTPUT="fiord influxdb --uri $INFLUXDB_URI --db=${INFLUXDB_DBNAME:-fio} --tags $TAGS"
+  fiord influxdb --input $out --uri $INFLUXDB_URI --db=${INFLUXDB_DBNAME:-fio} --tags $TAGS
+  if [ $? -ne 0 ]; then
+    (>2& echo "fiord command failed")
+    exit 3
+  fi
 fi
 
-fio --output-format=json $DIR/$TEST_TYPE.fio --bs=$BLKSIZE --filename /var/lib/storageos/volumes/$volid | $OUTPUT
-
 storageos $cli_auth volume rm default/$volname
+rm $out
+
+exit 0

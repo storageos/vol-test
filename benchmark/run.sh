@@ -19,10 +19,10 @@ if [ -z $TF_VAR_build ]; then
 fi
 
 if ! which terraform; then
-  (>2& echo "Terraform must be installed and in your path") 
+  (>2& echo "Terraform must be installed and in your path")
   exit 1
 fi
 
 for provider in $IAAS; do
-    $BASE/terraform/${provider}/scripts/provision.sh 
-done 
+    $BASE/terraform/${provider}/scripts/provision.sh
+done
