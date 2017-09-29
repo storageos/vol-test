@@ -8,6 +8,9 @@ env:
   PROFILE:
   CPU:
   MEMORY:
+  OS:
+  PRODUCT:
+  VERSION:
 jobs:
   baseline:
     exec: "bash"
@@ -146,35 +149,35 @@ jobs:
     args: ["-c", "~/node-scripts/fio/run.sh randwrite 64k 1 false"]
     exclusive: true
 
-  randread-norep-512k:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randread 512k 0 true"]
-    exclusive: true
-  randread-1rep-512k:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randread 512k 1 true"]
-    exclusive: true
-  randwrite-norep-512k:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 0 true"]
-    exclusive: true
-  randwrite-1rep-512k:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 1 true"]
-    exclusive: true
-  randread-norep-512k-nocache:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randread 512k 0 false"]
-    exclusive: true
-  randread-1rep-512k-nocache:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randread 512k 1 false"]
-    exclusive: true
-  randwrite-norep-512k-nocache:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 0 false"]
-    exclusive: true
-  randwrite-1rep-512k-nocache:
-    exec: "bash"
-    args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 1 false"]
-    exclusive: true
+  # randread-norep-512k:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randread 512k 0 true"]
+  #   exclusive: true
+  # randread-1rep-512k:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randread 512k 1 true"]
+  #   exclusive: true
+  # randwrite-norep-512k:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 0 true"]
+  #   exclusive: true
+  # randwrite-1rep-512k:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 1 true"]
+  #   exclusive: true
+  # randread-norep-512k-nocache:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randread 512k 0 false"]
+  #   exclusive: true
+  # randread-1rep-512k-nocache:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randread 512k 1 false"]
+  #   exclusive: true
+  # randwrite-norep-512k-nocache:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 0 false"]
+  #   exclusive: true
+  # randwrite-1rep-512k-nocache:
+  #   exec: "bash"
+  #   args: ["-c", "~/node-scripts/fio/run.sh randwrite 512k 1 false"]
+  #   exclusive: true
