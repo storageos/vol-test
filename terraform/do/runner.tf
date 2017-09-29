@@ -14,7 +14,7 @@ module "storageos_cluster"  {
   es_user="${var.es_user}"
   es_pass="${var.es_pass}"
   node_container_version="${var.storageos_version}"
-  ssh_fingerprint="${var.ssh_fingerprint}" 
+  ssh_fingerprint="${var.ssh_fingerprint}"
 }
 
 output "hostnames" {
@@ -47,13 +47,13 @@ resource "null_resource" "runner" {
     timeout = "10s"
   }
 
-  /* copy the bundled binaries */ 
+  /* copy the bundled binaries */
   provisioner "file" {
     source = "./bin"
     destination = "/usr/local/"
   }
 
-  /* copy the job config binary */ 
+  /* copy the job config binary */
   provisioner "file" {
     source = "./jobs"
     destination = "/var/lib/jobs"
@@ -69,13 +69,14 @@ STORAGEOS_PASSWORD=storageos
 TYPE="${var.type}"
 PROFILE="${var.profile}"
 CPU=1
-MEMORY="4gb"
+MEMORY="${var.memory}"
+OS="${var.os}"
 PRODUCT="storageos"
 VERSION="${var.storageos_version}"
 EOF
     destination = "/etc/default/runner"
   }
-  
+
   /* copy runner systemd file */
   provisioner "file" {
     content = "${data.template_file.runner-service.rendered}"
