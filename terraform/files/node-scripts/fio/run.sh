@@ -27,7 +27,7 @@ case $PRODUCT in
     VERSION="N/A"
     NBD="N/A"
     CACHE="N/A"
-    REPLICAS="N/A"
+    REPLICAS=0
     ;;
 
   storageos)
