@@ -33,6 +33,11 @@ variable "storageos_cli_version" {
   default = "0.0.13"
 }
 
+variable "nbd" {
+  description = "nbd kernel module enable"
+  default = "true"
+}
+
 variable "nodes" {
   description = "number of nodes in cluster"
   default = "3"
