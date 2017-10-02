@@ -24,8 +24,8 @@ case $PRODUCT in
   native)
     filename=/root/$volname
     dd if=/dev/zero of=$filename bs=1M count=1024
-    VERSION=""
-    NBD=""
+    VERSION="N/A"
+    NBD="N/A"
     ;;
 
   storageos)
