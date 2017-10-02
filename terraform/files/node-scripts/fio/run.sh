@@ -67,7 +67,7 @@ if [[ -n $INFLUXDB_URI ]]; then
   [[ -n $BLKSIZE ]] && TAGS="$TAGS,blocksize=${BLKSIZE}"
   [[ -n $REPLICAS ]] && TAGS="$TAGS,replicas=${REPLICAS}"
   [[ -n $CACHE ]] && TAGS="$TAGS,cache=${CACHE}"
-  [[ -n $HO[STNAME ]] && TAGS="$TAGS,host=${HO[STNAME}"
+  [[ -n $HO[STNAME ]] && TAGS="$TAGS,host=${HOSTNAME}"
   [[ -n $CPU ]] && TAGS="$TAGS,cpus=${CPU}"
   [[ -n $MEMORY ]] && TAGS="$TAGS,memory=${MEMORY}"
   [[ -n $PRODUCT ]] && TAGS="$TAGS,product=${PRODUCT}"
