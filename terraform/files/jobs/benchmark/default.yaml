@@ -17,35 +17,35 @@ jobs:
     args: ["-c", "~/node-scripts/bench-prepare/bench-prepare.sh"]
     exclusive: true
 
-  randread-norep-4k-nocache:
+  randread-norep-4k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randread 4k"]
     exclusive: true
-  randwrite-norep-4k-nocache:
+  randwrite-norep-4k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randwrite 4k"]
     exclusive: true
-  randread-norep-8k-nocache:
+  randread-norep-8k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randread 8k"]
     exclusive: true
-  randwrite-norep-8k-nocache:
+  randwrite-norep-8k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randwrite 8k"]
     exclusive: true
-  randread-norep-16k-nocache:
+  randread-norep-16k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randread 16k"]
     exclusive: true
-  randwrite-norep-16k-nocache:
+  randwrite-norep-16k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randwrite 16k"]
     exclusive: true
-  randread-norep-64k-nocache:
+  randread-norep-64k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randread 64k"]
     exclusive: true
-  randwrite-norep-64k-nocache:
+  randwrite-norep-64k-native:
     exec: "bash"
     args: ["-c", "~/node-scripts/fio/run.sh native randwrite 64k"]
     exclusive: true
