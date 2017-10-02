@@ -25,6 +25,7 @@ case $PRODUCT in
     filename=/root/$volname
     dd if=/dev/zero of=$filename bs=1M count=1024
     VERSION=""
+    NBD=""
     ;;
 
   storageos)
@@ -72,6 +73,7 @@ if [[ -n $INFLUXDB_URI ]]; then
   [[ -n $MEMORY ]] && TAGS="$TAGS,memory=${MEMORY}"
   [[ -n $PRODUCT ]] && TAGS="$TAGS,product=${PRODUCT}"
   [[ -n $VERSION ]] && TAGS="$TAGS,version=${VERSION}"
+  [[ -n $NBD ]] && TAGS="$TAGS,nbd=${NBD}"
   fiord influxdb --input $out --uri $INFLUXDB_URI --db=${INFLUXDB_DBNAME:-fio} --tags $TAGS
   if [ $? -ne 0 ]; then
     (>2& echo "fiord command failed")

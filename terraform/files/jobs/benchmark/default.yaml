@@ -9,6 +9,7 @@ env:
   CPU:
   MEMORY:
   OS:
+  NBD:
   PRODUCT:
   VERSION:
 jobs:

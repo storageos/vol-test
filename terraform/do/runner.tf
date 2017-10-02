@@ -8,6 +8,7 @@ module "storageos_cluster"  {
   machine_size="${var.memory}"
   pvt_key_path="${var.pvt_key_path}"
   ubuntu_version="${var.os}"
+  nbd="${var.nbd}"
   cli_version="${var.storageos_cli_version}"
   es_host="${var.es_host}"
   es_port="${var.es_port}"
@@ -71,6 +72,7 @@ PROFILE="${var.profile}"
 CPU=1
 MEMORY="${var.memory}"
 OS="${var.os}"
+NBD="${var.nbd}"
 PRODUCT="storageos"
 VERSION="${var.storageos_version}"
 EOF

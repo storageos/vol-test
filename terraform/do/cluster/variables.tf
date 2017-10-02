@@ -3,17 +3,9 @@ variable "ubuntu_version" {
   description = "Ubuntu version for digital ocean tags"
 }
 
-# variable "build" {
-#   description = "Jenkins build id"
-# }
-
 variable "tag" {
   description = "tag on cluster instances"
 }
-
-# variable "machine_prefix" {
-#   description = "prefix for hostname on machines"
-# }
 
 variable "cluster_size" {
   description = "size of storageos cluster"
@@ -37,6 +29,11 @@ variable "region" {
 
 variable "ssh_fingerprint" {
   description = "SSH fingerprint of key to add to digital ocean, must be already in account"
+}
+
+variable "nbd" {
+  description = "nbd kernel module enable"
+  default = "true"
 }
 
 variable "es_host" {

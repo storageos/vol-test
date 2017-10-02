@@ -33,9 +33,9 @@ resource "digitalocean_droplet" "storageos-ubuntu" {
   region = "lon1"
   size = "${var.machine_size}"
   image = "${var.ubuntu_version}"
-  ssh_keys = [ 
-       "${var.ssh_fingerprint}" 
-     ] 
+  ssh_keys = [
+       "${var.ssh_fingerprint}"
+     ]
   tags = ["${digitalocean_tag.tag.id}"]
   private_networking = true
 
@@ -53,11 +53,27 @@ resource "digitalocean_droplet" "storageos-ubuntu" {
       "apt -q -y update",
       "curl -fsSL get.docker.com -o get-docker.sh",
       "sh get-docker.sh",
-      /* "sudo modprobe nbd nbds_max=1024", */
-      /* "echo 'options nbd nbds_max=1024' > /etc/modprobe.d/nbd.conf", */
       "mkdir -p /var/lib/storageos",
       "curl -sSL https://github.com/storageos/go-cli/releases/download/${var.cli_version}/storageos_linux_amd64 > /usr/local/bin/storageos",
       "chmod +x /usr/local/bin/storageos"
+    ]
+  }
+}
+
+resource "null_resource" "nbd" {
+
+  count = "${var.nbd == "true" ? 3 : 0}"
+
+  provisioner "remote-exec" {
+    connection {
+      type = "ssh"
+      host = "${element(digitalocean_droplet.storageos-ubuntu.*.ipv4_address , count.index)}"
+      private_key = "${file(var.pvt_key_path)}"
+      timeout = "10s"
+    }
+    inline = [
+      "modprobe nbd nbds_max=1024",
+      "echo 'options nbd nbds_max=1024' > /etc/modprobe.d/nbd.conf"
     ]
   }
 }
