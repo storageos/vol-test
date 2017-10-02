@@ -26,6 +26,8 @@ case $PRODUCT in
     dd if=/dev/zero of=$filename bs=1M count=1024
     VERSION="N/A"
     NBD="N/A"
+    CACHE="N/A"
+    REPLICAS="N/A"
     ;;
 
   storageos)
@@ -68,7 +70,7 @@ if [[ -n $INFLUXDB_URI ]]; then
   [[ -n $BLKSIZE ]] && TAGS="$TAGS,blocksize=${BLKSIZE}"
   [[ -n $REPLICAS ]] && TAGS="$TAGS,replicas=${REPLICAS}"
   [[ -n $CACHE ]] && TAGS="$TAGS,cache=${CACHE}"
-  [[ -n $HO[STNAME ]] && TAGS="$TAGS,host=${HOSTNAME}"
+  [[ -n $HOSTNAME ]] && TAGS="$TAGS,host=${HOSTNAME}"
   [[ -n $CPU ]] && TAGS="$TAGS,cpus=${CPU}"
   [[ -n $MEMORY ]] && TAGS="$TAGS,memory=${MEMORY}"
   [[ -n $PRODUCT ]] && TAGS="$TAGS,product=${PRODUCT}"
