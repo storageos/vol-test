@@ -31,6 +31,9 @@ load ../test_helper
 
   run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(printf "%s:5705,%s:5705,%s:5705" "$AIP1" "AIP2" "AIP3")
   assert_success
+  
+  # Cluster joining takes a little time
+  sleep 10
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
