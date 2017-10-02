@@ -5,36 +5,57 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [[ $# -lt 2 ]]; then
-  echo "Usage: $0 testtype blocksize [replicas] [cache true/false]"
+  echo "Usage: $0 product testtype blocksize [replicas] [cache true/false]"
   exit 1
 fi
 
-TEST_TYPE=$1
-BLKSIZE=$2
-REPLICAS=${3:-0}
-CACHE=${4:-true}
+PRODUCT=$1
+TEST_TYPE=$2
+BLKSIZE=$3
+REPLICAS=${4:-0}
+CACHE=${5:-false}
 
-cli_auth="-u ${STORAGEOS_USERNAME:-storageos} -p ${STORAGEOS_PASSWORD:-storageos}"
 volname=$(uuidgen | cut -c1-5)
+filename="unset"
 
-if [ $REPLICAS -gt 0 ]; then
-  LABELS="--label storageos.feature.replicas=${REPLICAS}"
-fi
+# Provision volume
+case $PRODUCT in
 
-if [ $CACHE == "false" ]; then
-  LABELS="$LABELS --label storageos.feature.nocache=true"
-fi
+  native)
+    filename=/root/$volname
+    dd if=/dev/zero of=$filename bs=1M count=1024
+    ;;
 
-storageos $cli_auth volume create $LABELS $volname
-if [ $? -ne 0 ]; then
-  (>2& echo "volume create failed")
-  exit 1
-fi
+  storageos)
+    cli_auth="-u ${STORAGEOS_USERNAME:-storageos} -p ${STORAGEOS_PASSWORD:-storageos}"
 
-volid=$(storageos $CREDS volume inspect default/$volname --format {{.ID}})
+    if [ $REPLICAS -gt 0 ]; then
+      LABELS="--label storageos.feature.replicas=${REPLICAS}"
+    fi
+
+    if [ $CACHE == "false" ]; then
+      LABELS="$LABELS --label storageos.feature.nocache=true"
+    fi
+
+    storageos $cli_auth volume create $LABELS $volname
+    if [ $? -ne 0 ]; then
+      (>2& echo "volume create failed")
+      exit 2
+    fi
+
+    volid=$(storageos $CREDS volume inspect default/$volname --format {{.ID}})
+    filename=/var/lib/storageos/volumes/$volid
+    ;;
+
+  *)
+    (>2& echo "unsupported product type, 1st param must be one of 'native' or 'storageos'")
+    exit 1
+    ;;
+
+esac
 
 out=$(mktemp)
-fio --output-format=json $DIR/$TEST_TYPE.fio --bs=$BLKSIZE --filename /var/lib/storageos/volumes/$volid > $out
+fio --output-format=json $DIR/$TEST_TYPE.fio --bs=$BLKSIZE --filename $filename > $out
 if [ $? -ne 0 ]; then
   (>2& echo "fio command failed")
   exit 2
@@ -57,7 +78,15 @@ if [[ -n $INFLUXDB_URI ]]; then
   fi
 fi
 
-storageos $cli_auth volume rm default/$volname
-rm $out
+# Clean-up
+case $PRODUCT in
+  native)
+    rm $filename
+    ;;
+  storageos)
+    storageos $cli_auth volume rm default/$volname
+    ;;
+esac
 
+# rm $out
 exit 0
