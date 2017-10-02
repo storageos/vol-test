@@ -64,14 +64,14 @@ fi
 
 if [[ -n $INFLUXDB_URI ]]; then
   TAGS="volname=${volname}"
-  [ -n $BLKSIZE ] && TAGS="$TAGS,blocksize=${BLKSIZE}"
-  [ -n $REPLICAS ] && TAGS="$TAGS,replicas=${REPLICAS}"
-  [ -n $CACHE ] && TAGS="$TAGS,cache=${CACHE}"
-  [ -n $HOSTNAME ] && TAGS="$TAGS,host=${HOSTNAME}"
-  [ -n $CPU ] && TAGS="$TAGS,cpus=${CPU}"
-  [ -n $MEMORY ] && TAGS="$TAGS,memory=${MEMORY}"
-  [ -n $PRODUCT ] && TAGS="$TAGS,product=${PRODUCT}"
-  [ -n $VERSION ] && TAGS="$TAGS,version=${VERSION}"
+  [[ -n $BLKSIZE ]] && TAGS="$TAGS,blocksize=${BLKSIZE}"
+  [[ -n $REPLICAS ]] && TAGS="$TAGS,replicas=${REPLICAS}"
+  [[ -n $CACHE ]] && TAGS="$TAGS,cache=${CACHE}"
+  [[ -n $HO[STNAME ]] && TAGS="$TAGS,host=${HO[STNAME}"
+  [[ -n $CPU ]] && TAGS="$TAGS,cpus=${CPU}"
+  [[ -n $MEMORY ]] && TAGS="$TAGS,memory=${MEMORY}"
+  [[ -n $PRODUCT ]] && TAGS="$TAGS,product=${PRODUCT}"
+  [[ -n $VERSION ]] && TAGS="$TAGS,version=${VERSION}"
   fiord influxdb --input $out --uri $INFLUXDB_URI --db=${INFLUXDB_DBNAME:-fio} --tags $TAGS
   if [ $? -ne 0 ]; then
     (>2& echo "fiord command failed")
