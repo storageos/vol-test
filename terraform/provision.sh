@@ -1,13 +1,16 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
-BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Only source env if vars aren't set (by Jenkins) so it can be run manually
-if [ -f envfile.sh ]; then
+if [ -f $BASE/envfile.sh ]; then
   set -a
-  . envfile.sh
+  . $BASE/envfile.sh
   set +a
 fi
+
+# While we only support Digital Ocean, default to it
+IAAS=${IAAS:=do}
 
 # Validate required params, the rest have defaults set in variables.tf
 [ -z $TF_VAR_type ] && (>2& echo "TF_VAR_type must be set to benchmark or stress"; exit 1)
@@ -24,5 +27,5 @@ if ! which terraform; then
 fi
 
 for provider in $IAAS; do
-    $BASE/terraform/${provider}/scripts/provision.sh
+    $BASE/${provider}/scripts/provision.sh
 done

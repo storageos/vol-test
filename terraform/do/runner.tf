@@ -3,7 +3,7 @@ module "storageos_cluster"  {
   source = "./cluster"
   do_token = "${var.do_token}"
   region="${var.region}"
-  tag="${var.type}-${var.build}"
+  tag="${var.build}"
   cluster_size="${var.nodes}"
   machine_size="${var.memory}"
   pvt_key_path="${var.pvt_key_path}"
@@ -49,13 +49,13 @@ resource "null_resource" "runner" {
 
   /* copy the bundled binaries */
   provisioner "file" {
-    source = "./bin"
+    source = "../files/bin"
     destination = "/usr/local/"
   }
 
   /* copy the job config binary */
   provisioner "file" {
-    source = "./jobs"
+    source = "../files/jobs"
     destination = "/var/lib/jobs"
   }
 
@@ -85,7 +85,7 @@ EOF
 
   /* copy scripts for jobs */
   provisioner "file" {
-    source = "./node-scripts"
+    source = "../files/node-scripts"
     destination = "~/"
   }
 

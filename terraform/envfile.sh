@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 # list of envs expected for this script, sourceable
 IAAS="do" # currently do and kubeadm
@@ -17,3 +17,9 @@ IAAS="do" # currently do and kubeadm
 # Theese are read/set in terraform/*/provision.sh
 # PVTK_PATH=~/.ssh/id_rsa
 # PUBK_PATH=~/.ssh/id_rsa.pub
+
+TF_VAR_es_user="access"
+TF_VAR_es_pass="keetoh6I"
+TF_VAR_do_token="5143aa72a299dca1eb396d9e3592c0fed09bb8acefa2670b352e46fad5e46ae6"
+TF_VAR_influxdb_uri="http://admin:Letmein1@influxdb.storageos.cloud:8086"
+
