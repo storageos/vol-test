@@ -13,7 +13,8 @@ load "../../test_helper"
   run $prefix docker plugin rm storageos
   run $prefix docker plugin install --grant-all-permissions --alias storageos $driver $pluginopts
   assert_success
-  sleep 60
+
+  wait_for_volumes
 }
 
 @test "Test: Create volume using driver (storageos)" {
