@@ -12,7 +12,7 @@ load ../test_helper
     assert_success
   done
 
-  sleep 10
+  wait_for_cluster
 }
 
 @test "Disable default pool, all nodes [VERIFY]" {
@@ -55,7 +55,7 @@ load ../test_helper
   run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$id
   assert_success
 
-  sleep 20
+  wait_for_cluster
 }
 
 @test "Disable default pool, single node [VERIFY]" {

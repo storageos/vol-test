@@ -3,7 +3,6 @@
 # is this test up to date?
 load ../test_helper
 
-
 @test "IP list join [INSTALL]" {
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
@@ -32,7 +31,7 @@ load ../test_helper
     assert_success
   done
 
-  sleep 5
+  wait_for_cluster
 }
 
 @test "IP list join [VERIFY]" {
@@ -81,7 +80,7 @@ load ../test_helper
     assert_success
   done
 
-  sleep 5
+  wait_for_cluster
 }
 
 @test "IP list join no port [VERIFY]" {
@@ -126,7 +125,7 @@ load ../test_helper
     assert_success
   done
 
-  sleep 5
+  wait_for_cluster
 }
 
 @test "IP list join scheme [VERIFY]" {
@@ -171,7 +170,7 @@ load ../test_helper
     assert_success
   done
 
-  sleep 5
+  wait_for_cluster
 }
 
 @test "IP list join scheme no port [VERIFY]" {
@@ -216,7 +215,7 @@ load ../test_helper
     assert_success
   done
 
-  sleep 5
+  wait_for_cluster
 }
 
 @test "IP list join mixture [VERIFY]" {
@@ -261,8 +260,7 @@ load ../test_helper
     assert_success
   done
 
-  # Let the cluster settle
-  sleep 10
+  wait_for_cluster
 }
 
 @test "IP list join token [VERIFY]" {
@@ -299,8 +297,7 @@ load ../test_helper
   run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
   assert_success
 
-  # Need to do a long wait until DEV-1645 is fixed
-  sleep 30
+  wait_for_volumes 1
 }
 
 @test "join after volume create [VERIFY]" {
@@ -318,6 +315,8 @@ load ../test_helper
 
   run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(printf "%s:5705,%s:5705,%s:5705" "$AIP1" "AIP2" "AIP3")
   assert_success
+
+  wait_for_cluster
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
 
