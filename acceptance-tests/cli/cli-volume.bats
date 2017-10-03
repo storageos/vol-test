@@ -2,6 +2,9 @@
 
 load ../../test_helper
 
+short_run="run ui_timeout"
+long_run="run long_timeout"
+
 export VOL_NAME=vol1
 export NAMESPACE=test
 export FULL_NAME=$NAMESPACE/$VOL_NAME
@@ -10,13 +13,13 @@ vol_prefix="$prefix storageos $cliopts volume"
 
 @test "create disk with size, description and fstype" {
   # awaiting bug fix for description: DEV-1238
-  run $vol_prefix create  -f reiserfs -d \'1Gb disk for disk create tests\' -s 1 -n $NAMESPACE $VOL_NAME
+  $short_run $vol_prefix create  -f reiserfs -d \'1Gb disk for disk create tests\' -s 1 -n $NAMESPACE $VOL_NAME
   assert_success
   assert_output $FULL_NAME
 }
 
 @test "create disk - no name" {
-  run $vol_prefix create -n $NAMESPACE
+  $short_run $vol_prefix create -n $NAMESPACE
   assert_failure
   # current error message is bad.. should be stopped at cli and not return from api
   # message should contain please provide name for disk :
@@ -24,19 +27,19 @@ vol_prefix="$prefix storageos $cliopts volume"
 }
 
 @test "create disk -  no namespace" {
-  run $vol_prefix create nonamespace
+  $short_run $vol_prefix create nonamespace
   # uses default namespace
   assert_success
 }
 
 @test "create disk - already exists in namespace" {
-  run $vol_prefix create  -n $NAMESPACE -s 1 $VOL_NAME
+  $short_run $vol_prefix create  -n $NAMESPACE -s 1 $VOL_NAME
   assert_failure
   assert_output --partial "Volume with name '$VOL_NAME' already exists"
 }
 
 @test "inspect disk " {
-  run $vol_prefix inspect $FULL_NAME
+  $short_run $vol_prefix inspect $FULL_NAME
   echo $output | jq 'first.namespace == "test"'
   echo $output | jq 'first.fsType == "reiserfs"'
   echo $output | jq "first.name == \"$VOL_NAME\""
@@ -45,19 +48,19 @@ vol_prefix="$prefix storageos $cliopts volume"
 }
 
 @test "inspect - no disk" {
-  run $vol_prefix inspect
+  $short_run $vol_prefix inspect
   assert_failure
 }
 
 @test "mount disk" { # Should be re-enabled once node is also tested in BATS
   skip # currently know to fail due to mount propagation bug..
-  run $vol_prefix mount $FULL_NAME /media/testmount
+  $long_run $vol_prefix mount $FULL_NAME /media/testmount
   assert_success
 }
 
 @test "unmount disk" { # Should be re-enabled once node is also tested in BATS
   skip # currently know to fail due to mount propagation bug..
-  run $vol_prefix unmount $FULL_NAME
+  $long_run $vol_prefix unmount $FULL_NAME
   assert_success
 
   # add a regression for unmount deleting parent dir
@@ -66,23 +69,23 @@ vol_prefix="$prefix storageos $cliopts volume"
 }
 
 @test "update - size to 2gb" {
-  run $vol_prefix update -s 2 $FULL_NAME
-  run $vol_prefix inspect $FULL_NAME
+  $short_run $vol_prefix update -s 2 $FULL_NAME
+  $short_run $vol_prefix inspect $FULL_NAME
   echo $output | jq 'first.size == 2'
 }
 
 @test "update - size 0" {
-  run $vol_prefix update -s 0 $FULL_NAME
+  $short_run $vol_prefix update -s 0 $FULL_NAME
   assert_failure
 }
 
 @test "update - size negative" {
-  run $vol_prefix update -s -1 $FULL_NAME
+  $short_run $vol_prefix update -s -1 $FULL_NAME
   assert_failure
 }
 
 @test "delete disk" {
-  run $vol_prefix rm $FULL_NAME
+  $short_run $vol_prefix rm $FULL_NAME
   assert_success
 }
 
