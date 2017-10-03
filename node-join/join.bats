@@ -3,13 +3,15 @@
 # is this test up to date?
 load ../test_helper
 
+short_run="run ui_timeout"
+long_run="run long_timeout"
 
 @test "join after volume create [INSTALL]" {
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   join=$(printf "%s:5705" "$AIP1")
 
   # One node for now
-  run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
+  $long_run $prefix docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
   assert_success
 
   wait_for_volumes 1
@@ -17,7 +19,7 @@ load ../test_helper
 
 @test "join after volume create [VERIFY]" {
   echo "Creating volume"
-  run $prefix storageos $cliopts volume create -n default foo
+  $short_run $prefix storageos $cliopts volume create -n default foo
   assert_success
 
   echo "Installing on nodes 2 & 3"
@@ -25,10 +27,10 @@ load ../test_helper
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
   AIP3=$(echo $prefix3 | cut -f 2 -d'@')
 
-  run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(printf "%s:5705,%s:5705" "$AIP1" "AIP2")
+  $long_run $prefix2 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(printf "%s:5705,%s:5705" "$AIP1" "AIP2")
   assert_success
 
-  run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(printf "%s:5705,%s:5705,%s:5705" "$AIP1" "AIP2" "AIP3")
+  $long_run $prefix3 docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$(printf "%s:5705,%s:5705,%s:5705" "$AIP1" "AIP2" "AIP3")
   assert_success
 
   wait_for_cluster
@@ -38,7 +40,7 @@ load ../test_helper
   echo "Confirming volume exists on all nodes"
   for i in "${arr[@]}"
   do
-    run $i storageos $cliopts volume ls --format {{.Name}}
+    $short_run $i storageos $cliopts volume ls --format {{.Name}}
     assert_success
 
     volumes=$(echo $output | wc -w)
@@ -53,7 +55,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin rm -f storageos
+    $long_run $i docker plugin rm -f storageos
     run $i rm -rf /var/lib/storageos/kv
     assert_success
   done
