@@ -12,9 +12,8 @@ load "../../test_helper"
   run $prefix2 docker plugin disable storageos -f
   run $prefix2 docker plugin rm storageos
   run $prefix2 docker plugin install --grant-all-permissions --alias storageos $driver $pluginopts
+  sleep 60
   assert_success
-
-  wait_for_volumes
 }
 
 @test "Test: Confirm volume is visible on second node (volume ls) using driver (storageos)" {
