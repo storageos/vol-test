@@ -3,6 +3,9 @@
 # is this test up to date?
 load ../test_helper
 
+short_run="run ui_timeout"
+long_run="run long_timeout"
+
 @test "IP list join [INSTALL]" {
   AIP1=$(echo $prefix | cut -f 2 -d'@')
   AIP2=$(echo $prefix2 | cut -f 2 -d'@')
@@ -27,7 +30,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
+    $long_run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
 
@@ -41,7 +44,7 @@ load ../test_helper
   do
     printf "Checking state on %s\n" "$i"
 
-    run $i storageos $cliopts node ls --format {{.Name}}
+    $short_run $i storageos $cliopts node ls --format {{.Name}}
     assert_success
 
     hosts=$(echo $output | wc -w)
@@ -58,7 +61,7 @@ load ../test_helper
   do
     #run $i docker container kill storageos
     #run $i docker container rm storageos
-    run $i docker plugin rm -f storageos
+    $long_run $i docker plugin rm -f storageos
     run $i rm -rf /var/lib/storageos/kv
     assert_success
   done
@@ -76,7 +79,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
+    $long_run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
 
@@ -88,7 +91,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i storageos $cliopts node ls --format {{.Name}}
+    $short_run $i storageos $cliopts node ls --format {{.Name}}
     assert_success
 
     hosts=$(echo $output | wc -w)
@@ -103,7 +106,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin rm -f storageos
+    $long_run $i docker plugin rm -f storageos
     run $i rm -rf /var/lib/storageos/kv
     assert_success
   done
@@ -121,7 +124,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
+    $long_run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
 
@@ -133,7 +136,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i storageos $cliopts node ls --format {{.Name}}
+    $short_run $i storageos $cliopts node ls --format {{.Name}}
     assert_success
 
     hosts=$(echo $output | wc -w)
@@ -148,7 +151,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin rm -f storageos
+    $long_run $i docker plugin rm -f storageos
     run $i rm -rf /var/lib/storageos/kv
     assert_success
   done
@@ -166,7 +169,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
+    $long_run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
 
@@ -178,7 +181,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i storageos $cliopts node ls --format {{.Name}}
+    $short_run $i storageos $cliopts node ls --format {{.Name}}
     assert_success
 
     hosts=$(echo $output | wc -w)
@@ -193,7 +196,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin rm -f storageos
+    $long_run $i docker plugin rm -f storageos
     run $i rm -rf /var/lib/storageos/kv
     assert_success
   done
@@ -211,7 +214,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
+    $long_run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
 
@@ -223,7 +226,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i storageos $cliopts node ls --format {{.Name}}
+    $short_run $i storageos $cliopts node ls --format {{.Name}}
     assert_success
 
     hosts=$(echo $output | wc -w)
@@ -238,7 +241,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin rm -f storageos
+    $long_run $i docker plugin rm -f storageos
     run $i rm -rf /var/lib/storageos/kv
     assert_success
   done
@@ -256,7 +259,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
+    $long_run $i docker plugin install --alias storageos --grant-all-permissions $driver JOIN=$join
     assert_success
   done
 
@@ -268,7 +271,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i storageos $cliopts node ls --format {{.Name}}
+    $short_run $i storageos $cliopts node ls --format {{.Name}}
     assert_success
 
     hosts=$(echo $output | wc -w)
@@ -283,7 +286,7 @@ load ../test_helper
 
   for i in "${arr[@]}"
   do
-    run $i docker plugin rm -f storageos
+    $long_run $i docker plugin rm -f storageos
     run $i rm -rf /var/lib/storageos/kv
     assert_success
   done

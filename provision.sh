@@ -152,14 +152,26 @@ function provision_do_nodes()
     echo "Creating new droplets"
     $doctl_auth compute tag create "$tag"
     for name in ${name_template}01 ${name_template}02 ${name_template}03; do
-      id=$($doctl_auth compute droplet create \
-        --image "$image" \
-        --region $region \
-        --size $size \
-        --ssh-keys $SSHKEY \
-        --tag-name "$tag" \
-        --format ID \
-        --no-header "$name")
+      id=""
+      attempts=0
+
+      while [[ -z "$id" ]]; do
+        id=$($doctl_auth compute droplet create \
+          --image "$image" \
+          --region $region \
+          --size $size \
+          --ssh-keys $SSHKEY \
+          --tag-name "$tag" \
+          --format ID \
+          --no-header "$name")
+
+        if [[ $attempts -gt 3 ]]; then
+            echo "Failed to provision ${name_template}02"
+            exit 1
+        fi
+
+        let "attempts=attempts+1"
+      done
       droplets+=" ${id}"
     done
   else
