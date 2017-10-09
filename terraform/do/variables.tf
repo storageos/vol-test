@@ -30,7 +30,7 @@ variable "storageos_image" {
 
 variable "storageos_version" {
   description = "storageos version"
-  default = "0.8.1"
+  default = "0.9.0"
 }
 
 variable "storageos_cli_version" {
