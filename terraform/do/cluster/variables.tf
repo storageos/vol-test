@@ -19,8 +19,12 @@ variable "cli_version" {
   description = "Version of cli to download on each node"
 }
 
-variable "node_container_version" {
-  description = "Version of the storageos/node container to run"
+variable "storageos_image" {
+  description = "storageos image"
+}
+
+variable "storageos_version" {
+  description = "storageos version"
 }
 
 variable "region" {

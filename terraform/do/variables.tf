@@ -23,6 +23,11 @@ variable "profile" {
   default = "default"
 }
 
+variable "storageos_image" {
+  description = "storageos image (defaults to storageos/node)"
+  default = "storageos/node"
+}
+
 variable "storageos_version" {
   description = "storageos version"
   default = "0.8.1"

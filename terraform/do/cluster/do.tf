@@ -5,15 +5,21 @@ resource "digitalocean_tag" "tag" {
 }
 
 # Template for INITIAL_CLUSTER configuration
+# DEPRECATED in 0.9
 data "template_file" "cluster_config" {
   template = "${join(",", formatlist("%s=http://%s:5707", "${digitalocean_droplet.storageos-ubuntu.*.name}", "${digitalocean_droplet.storageos-ubuntu.*.ipv4_address}"))}"
+}
+
+# Template for JOIN configuration
+data "template_file" "join" {
+  template = "${join(",", "${digitalocean_droplet.storageos-ubuntu.*.ipv4_address}")}"
 }
 
 data "template_file" "storageos-service" {
   template = "${file("${path.module}/files/storageos.service.tpl")}"
 
   vars {
-    docker_image = "storageos/node:${var.node_container_version}"
+    docker_image = "${var.storageos_image}:${var.storageos_version}"
   }
 }
 
@@ -141,8 +147,9 @@ resource "null_resource" "install-apps" {
     content = <<EOF
 HOSTNAME="${element(digitalocean_droplet.storageos-ubuntu.*.name , count.index)}"
 ADVERTISE_IP="${element(digitalocean_droplet.storageos-ubuntu.*.ipv4_address , count.index)}"
+JOIN=${data.template_file.join.rendered}
+# DEPRECATED in 0.9
 INITIAL_CLUSTER=${data.template_file.cluster_config.rendered}
-INFLUX_CONN=
 EOF
     destination = "/etc/default/storageos"
   }

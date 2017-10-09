@@ -9,12 +9,13 @@ module "storageos_cluster"  {
   pvt_key_path="${var.pvt_key_path}"
   ubuntu_version="${var.os}"
   nbd="${var.nbd}"
+  storageos_image="${var.storageos_image}"
+  storageos_version="${var.storageos_version}"
   cli_version="${var.storageos_cli_version}"
   es_host="${var.es_host}"
   es_port="${var.es_port}"
   es_user="${var.es_user}"
   es_pass="${var.es_pass}"
-  node_container_version="${var.storageos_version}"
   ssh_fingerprint="${var.ssh_fingerprint}"
 }
 
@@ -74,6 +75,7 @@ MEMORY="${var.memory}"
 OS="${var.os}"
 NBD="${var.nbd}"
 PRODUCT="storageos"
+IMAGE="${var.storageos_image}"
 VERSION="${var.storageos_version}"
 EOF
     destination = "/etc/default/runner"
