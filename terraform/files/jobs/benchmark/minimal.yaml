@@ -1,0 +1,30 @@
+description: minimal benchmark tests
+env:
+  INFLUXDB_URI:
+  STORAGEOS_USERNAME:
+  STORAGEOS_PASSWORD:
+  HOSTNAME:
+  TYPE:
+  PROFILE:
+  CPU:
+  MEMORY:
+  OS:
+  PRODUCT:
+  VERSION:
+jobs:
+  randread-norep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh randread 4k 0 true"]
+    exclusive: true
+  randread-1rep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh randread 4k 1 true"]
+    exclusive: true
+  randwrite-norep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh randwrite 4k 0 true"]
+    exclusive: true
+  randwrite-1rep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh randwrite 4k 1 true"]
+    exclusive: true

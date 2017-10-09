@@ -6,5 +6,7 @@ branch-env.txt
 
 # stress tests
 .terraform/
+.terraform.tfstate.lock.info
 terraform.tfstate
 terraform.tfstate.backup
+terraform/envfile.sh

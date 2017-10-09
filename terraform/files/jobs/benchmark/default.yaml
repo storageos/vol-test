@@ -1,0 +1,184 @@
+description: default benchmark tests
+env:
+  INFLUXDB_URI:
+  STORAGEOS_USERNAME:
+  STORAGEOS_PASSWORD:
+  HOSTNAME:
+  TYPE:
+  PROFILE:
+  CPU:
+  MEMORY:
+  OS:
+  NBD:
+  PRODUCT:
+  VERSION:
+jobs:
+  baseline:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/bench-prepare/bench-prepare.sh"]
+    exclusive: true
+
+  randread-norep-4k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randread 4k"]
+    exclusive: true
+  randwrite-norep-4k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randwrite 4k"]
+    exclusive: true
+  randread-norep-8k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randread 8k"]
+    exclusive: true
+  randwrite-norep-8k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randwrite 8k"]
+    exclusive: true
+  randread-norep-16k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randread 16k"]
+    exclusive: true
+  randwrite-norep-16k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randwrite 16k"]
+    exclusive: true
+  randread-norep-64k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randread 64k"]
+    exclusive: true
+  randwrite-norep-64k-native:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh native randwrite 64k"]
+    exclusive: true
+
+  randread-norep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 4k 0 true"]
+    exclusive: true
+  randread-1rep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 4k 1 true"]
+    exclusive: true
+  randwrite-norep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 4k 0 true"]
+    exclusive: true
+  randwrite-1rep-4k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 4k 1 true"]
+    exclusive: true
+  randread-norep-4k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 4k 0 false"]
+    exclusive: true
+  randread-1rep-4k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 4k 1 false"]
+    exclusive: true
+  randwrite-norep-4k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 4k 0 false"]
+    exclusive: true
+  randwrite-1rep-4k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 4k 1 false"]
+    exclusive: true
+
+  randread-norep-8k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 8k 0 true"]
+    exclusive: true
+  randread-1rep-8k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 8k 1 true"]
+    exclusive: true
+  randwrite-norep-8k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 8k 0 true"]
+    exclusive: true
+  randwrite-1rep-8k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 8k 1 true"]
+    exclusive: true
+  randread-norep-8k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 8k 0 false"]
+    exclusive: true
+  randread-1rep-8k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 8k 1 false"]
+    exclusive: true
+  randwrite-norep-8k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 8k 0 false"]
+    exclusive: true
+  randwrite-1rep-8k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 8k 1 false"]
+    exclusive: true
+
+  randread-norep-16k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 16k 0 true"]
+    exclusive: true
+  randread-1rep-16k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 16k 1 true"]
+    exclusive: true
+  randwrite-norep-16k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 16k 0 true"]
+    exclusive: true
+  randwrite-1rep-16k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 16k 1 true"]
+    exclusive: true
+  randread-norep-16k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 16k 0 false"]
+    exclusive: true
+  randread-1rep-16k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 16k 1 false"]
+    exclusive: true
+  randwrite-norep-16k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 16k 0 false"]
+    exclusive: true
+  randwrite-1rep-16k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 16k 1 false"]
+    exclusive: true
+
+  randread-norep-64k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 64k 0 true"]
+    exclusive: true
+  randread-1rep-64k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 64k 1 true"]
+    exclusive: true
+  randwrite-norep-64k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 64k 0 true"]
+    exclusive: true
+  randwrite-1rep-64k:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 64k 1 true"]
+    exclusive: true
+  randread-norep-64k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 64k 0 false"]
+    exclusive: true
+  randread-1rep-64k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randread 64k 1 false"]
+    exclusive: true
+  randwrite-norep-64k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 64k 0 false"]
+    exclusive: true
+  randwrite-1rep-64k-nocache:
+    exec: "bash"
+    args: ["-c", "~/node-scripts/fio/run.sh $PRODUCT randwrite 64k 1 false"]
+    exclusive: true

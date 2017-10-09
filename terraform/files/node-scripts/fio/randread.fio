@@ -1,0 +1,13 @@
+[global]
+bs=4k
+ioengine=libaio
+iodepth=4
+direct=1
+random_generator=tausworthe
+random_distribution=random
+rw=randread
+percentage_random=100
+runtime=10
+
+[randread]
+numjobs=1
