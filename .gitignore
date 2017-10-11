@@ -3,6 +3,7 @@ test.env
 storageos_linux_*
 cli_build/
 branch-env.txt
+*.log
 
 # stress tests
 .terraform/
