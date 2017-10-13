@@ -56,6 +56,13 @@ Host tag      DO_TAG    $DO_TAG
 ==
 EOF
 
+pushd docker-container
+echo "-----------------------------"
+echo "running docker container (node) tests"
+echo "-----------------------------"
+  bats $BATS_OPTS .
+popd
+
 pushd startup-tests
 echo "-----------------------------"
 echo "running startup procedure tests"
