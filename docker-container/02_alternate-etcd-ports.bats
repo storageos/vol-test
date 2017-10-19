@@ -5,10 +5,10 @@ load ../test_helper
 short_run="run ui_timeout"
 long_run="run long_timeout"
 
-@test "Install containers on three nodes" {
+@test "Setup cluster with alternate etcd ports" {
   join=$(printf "%s:5705,%s:5705,%s:5705" "${prefix#*@}" "${prefix2#*@}" "${prefix3#*@}")
 
-  run install_nodes "JOIN=$join" "LOG_LEVEL=debug"
+  run install_nodes "JOIN=$join" "KV_CLIENT_PORT=5712" "KV_PEER_PORT=5713" "LOG_LEVEL=debug"
   assert_success
 
   wait_for_cluster
@@ -30,7 +30,6 @@ long_run="run long_timeout"
 }
 
 @test "Remove containers" {
-skip
   run remove_nodes
   assert_success
 }

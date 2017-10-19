@@ -55,9 +55,22 @@ function install_nodes {
 function remove_nodes {
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
-    long_timeout "$i" docker rm -f storageos
-    [ $? -eq 0 ]
+    # long_timeout "$i" docker stop storageos
+    long_timeout "$i" docker stop storageos
+    long_timeout "$i" docker rm storageos
+    long_timeout "$i" umount /var/lib/storageos/volumes
+    long_timeout "$i" rm -rf /var/lib/storageos
   done
+}
+
+function get_pid {
+    ssh_prefix=$1
+    proc_name=$2
+
+    rtn_pid=$($ssh_prefix docker container top storageos | grep $proc_name | egrep -o '([0-9]+)' | head -n 1)
+
+    # The caller can capture this
+    echo $rtn_pid
 }
 
 # wait a reasonable time for a command to complete before stopping it and returning
@@ -139,6 +152,9 @@ function wait_for_cluster {
 
         # Iff all are healthy, return early
         if [[ ok -eq 1 ]]; then
+          # extra safety sleep to wait for API router switch
+          # should go away once there is an API state in the health status
+          sleep 5
           return 0
         fi
 
@@ -146,7 +162,10 @@ function wait_for_cluster {
     fi
   }
 
-  # Timeout
+  # Timeout - time to return
+  # extra safety sleep to wait for API router switch
+  # should go away once there is an API state in the health status
+  sleep 5
   return 0
 }
 
