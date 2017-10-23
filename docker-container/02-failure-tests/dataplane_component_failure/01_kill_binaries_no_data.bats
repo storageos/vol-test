@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../test_helper
+load ../../../test_helper
 
 short_run="run ui_timeout"
 long_run="run long_timeout"
@@ -18,18 +18,18 @@ long_run="run long_timeout"
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
     # go and find the pid
-    dir_pid=$(get_pid $prefix "storageos-director")
-    [ -n $dir_pid ]
+    dir_pid=$(get_pid "$i" "storageos-director")
+    refute [ -z $dir_pid ]
 
     # kill the process
-    run "$i" kill -9 $dir_pid
+    run $i kill -9 $dir_pid
     assert_success
 
     # Give the some process restart time
     sleep 5
 
     # assert that it is running again (has been re-started)
-    [ -n $(get_pid $prefix "storageos-director") ]
+    refute [ -z $(get_pid "$i" "storageos-director") ]
   done
 }
 
@@ -37,18 +37,18 @@ long_run="run long_timeout"
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
     # go and find the pid
-    fs_dir_pid=$(get_pid $prefix "fs-director")
-    [ -n $fs_dir_pid ]
+    fs_dir_pid=$(get_pid "$i" "fs-director")
+    refute [ -z $fs_dir_pid ]
 
     # kill the process
-    run "$i" kill -9 $fs_dir_pid
+    run $i kill -9 $fs_dir_pid
     assert_success
 
     # Give the some process restart time
     sleep 5
 
     # assert that it is running again (has been re-started)
-    [ -n $(get_pid $prefix "fs-director") ]
+    refute [ -z $(get_pid "$i" "fs-director") ]
   done
 }
 
@@ -56,18 +56,18 @@ long_run="run long_timeout"
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
     # go and find the pid
-    rdb_pid=$(get_pid $prefix "rdbplugin")
-    [ -n $rdb_pid ]
+    rdb_pid=$(get_pid "$i" "rdbplugin")
+    refute [ -z $rdb_pid ]
 
     # kill the process
-    run "$i" kill -9 $rdb_pid
+    run $i kill -9 $rdb_pid
     assert_success
 
     # Give the some process restart time
     sleep 5
 
     # assert that it is running again (has been re-started)
-    [ -n $(get_pid $prefix "rdbplugin") ]
+    refute [ -z $(get_pid "$i" "rdbplugin") ]
   done
 }
 
@@ -76,18 +76,19 @@ long_run="run long_timeout"
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
     # go and find the pid
-    client_pid=$(get_pid $prefix "storageos-client")
-    [ -n $client_pid ]
+    client_pid=$(get_pid "$i" "/client")
+    refute [ -z $client_pid ]
 
+    printf "client_pid is: %s\n" "$client_pid"
     # kill the process
-    run "$i" kill -9 $client_pid
+    run $i kill -9 $client_pid
     assert_success
 
     # Give the some process restart time
     sleep 5
 
     # assert that it is running again (has been re-started)
-    [ -n $(get_pid $prefix "storageos-client") ]
+    refute [ -z $(get_pid "$i" "/client") ]
   done
 }
 
@@ -96,18 +97,18 @@ long_run="run long_timeout"
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
     # go and find the pid
-    server_pid=$(get_pid $prefix "storageos-client")
-    [ -n $server_pid ]
+    server_pid=$(get_pid "$i" "/server")
+    refute [ -z $server_pid ]
 
     # kill the process
-    run "$i" kill -9 $server_pid
+    run $i kill -9 $server_pid
     assert_success
 
     # Give the some process restart time
     sleep 5
 
     # assert that it is running again (has been re-started)
-    [ -n $(get_pid $prefix "storageos-client") ]
+    refute [ -z $(get_pid "$i" "/server") ]
   done
 }
 

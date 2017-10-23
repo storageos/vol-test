@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../test_helper
+load ../../test_helper
 
 short_run="run ui_timeout"
 long_run="run long_timeout"
@@ -11,7 +11,11 @@ long_run="run long_timeout"
   run install_nodes "JOIN=$join" "LOG_LEVEL=debug"
   assert_success
 
+  sleep 10
+
   wait_for_cluster
+
+  #assert_that_I_want_my_output
 }
 
 @test "Verify cluster" {
@@ -30,7 +34,6 @@ long_run="run long_timeout"
 }
 
 @test "Remove containers" {
-skip
   run remove_nodes
   assert_success
 }

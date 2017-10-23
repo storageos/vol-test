@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../test_helper
+load ../../test_helper
 
 short_run="run ui_timeout"
 long_run="run long_timeout"

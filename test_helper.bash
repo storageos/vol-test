@@ -35,8 +35,10 @@ function install_nodes {
 
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
+    # lets see these install commands
+    set -x
     long_timeout "$i" docker run -d --name storageos \
-      "$extra_env" \
+      $extra_env \
       -e HOSTNAME \
       -e ADVERTISE_IP="${i#*@}" \
       --net=host \
@@ -47,9 +49,16 @@ function install_nodes {
       -v /var/lib/storageos:/var/lib/storageos:rshared \
       -v /run/docker/plugins:/run/docker/plugins \
       "$node_driver" server
+    rtn_code=$?
+    set +x
+
     # ensure that the node was installed
-    [ $? -eq 0 ]
+    if [[ $rtn_code -gt 0 ]] ; then
+      return 1
+    fi
   done
+
+  return 0
 }
 
 function remove_nodes {
