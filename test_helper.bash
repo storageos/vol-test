@@ -27,7 +27,7 @@ function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 function install_nodes {
   extra_env=""
 
-  # build set of aditional env vars
+  # build set of additional env vars
   for i in "$@"; do
       extra_env+=$(printf -- '-e %s ' "$i")
   done
@@ -61,6 +61,10 @@ function install_nodes {
   return 0
 }
 
+# remove_nodes makes a best attempt to clean the state on remote hosts after a node install.
+# this function will stop any running container (sigkill-ing if necessary), remove the stopped
+# container, unmount any mount-points left (likely if DP sigkill-ed) before recursively deleting
+# /var/lib/storageos
 function remove_nodes {
   declare -a arr=("$prefix" "$prefix2" "$prefix3")
   for i in "${arr[@]}"; do
@@ -72,6 +76,11 @@ function remove_nodes {
   done
 }
 
+# get_pid takes a remote host (in the format of $prefix) as it's first arg, and a string partial as
+# the second arg. It then searches for a process running in the storageos container on the given
+# remote host who's name matches the string partial. This process's pid is then returned. The
+# caller can then use this information to kill this process with $arg1 kill $returned_pid as the
+# container was run with --pid=host.
 function get_pid {
     ssh_prefix=$1
     proc_name=$2

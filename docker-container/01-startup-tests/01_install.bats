@@ -14,8 +14,6 @@ long_run="run long_timeout"
   sleep 10
 
   wait_for_cluster
-
-  #assert_that_I_want_my_output
 }
 
 @test "Verify cluster" {
