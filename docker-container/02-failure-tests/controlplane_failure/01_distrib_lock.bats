@@ -37,7 +37,7 @@ long_run="run long_timeout"
   done
 
   # Cannot continue if there is no leader
-  [ "$leader" != "" ]
+  assert [ "$leader" != "" ]
 
   # shutdown the leader
   $long_run $leader docker stop storageos
@@ -56,7 +56,9 @@ long_run="run long_timeout"
   done
 
   # ensure there is a new leader
+  # done over two lines as refute cannot use compound commands (such as '[[' test statements)
   [[ "$combined" == *"true"* ]]
+  assert [ "$?" -eq 0 ]
 }
 
 @test "Remove containers" {

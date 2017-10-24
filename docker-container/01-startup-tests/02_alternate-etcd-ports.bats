@@ -25,7 +25,7 @@ long_run="run long_timeout"
     hosts=$(echo $output | wc -w)
     printf "There should be three hosts in output:\n%s\n" "$output"
 
-    [ "$hosts" -eq 3 ]
+    assert [ "$hosts" -eq 3 ]
   done
 }
 

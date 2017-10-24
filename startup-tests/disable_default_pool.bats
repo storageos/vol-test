@@ -24,7 +24,7 @@ load ../test_helper
   # Handy for debug
   diff <(echo ${output}) <(echo ${expected_output})
 
-  [ "$output" == "$expected_output" ]
+  assert [ "$output" == "$expected_output" ]
 
   # Test that they are not in the pool
   run $prefix storageos $cliopts pool inspect default --format {{.ControllerNames}}
@@ -67,7 +67,7 @@ load ../test_helper
   # Handy for debug
   diff <(echo ${output}) <(echo ${expected_output})
 
-  [ "$output" == "$expected_output" ]
+  assert [ "$output" == "$expected_output" ]
 
   # Grab the JSON for jq
   run $prefix storageos $cliopts pool inspect default
