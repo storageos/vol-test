@@ -22,7 +22,7 @@ long_run="run long_timeout"
   $short_run $prefix mkdir -p /mnt/test-mounts/1
   assert_success
 
-  $short_run $prefix storageos $cliopts volume mount directorTest /mnt/test-mounts/1
+  $short_run $prefix storageos $cliopts volume mount default/directorTest /mnt/test-mounts/1
   assert_success
 
   # create a 10M file
@@ -40,7 +40,7 @@ long_run="run long_timeout"
 }
 
 @test "Unmount and kill process" {
-  $short_run $prefix storageos $cliopts volume unmount directorTest
+  $short_run $prefix storageos $cliopts volume unmount default/directorTest
   assert_success
 
   # go and find the pid
@@ -56,7 +56,7 @@ long_run="run long_timeout"
 }
 
 @test "Remount and verify data" {
-  $short_run $prefix storageos $cliopts volume mount directorTest /mnt/test-mounts/1
+  $short_run $prefix storageos $cliopts volume mount default/directorTest /mnt/test-mounts/1
   assert_success
 
   $long_run $prefix md5sum --check /mnt/test-mounts/1/checksum
@@ -72,6 +72,10 @@ long_run="run long_timeout"
 }
 
 @test "Remove containers" {
+  # attempt to unmount and remove prior to shutdown
+  $short_run $prefix storageos $cliopts volume unmount default/directorTest
+  $short_run $prefix storageos $cliopts volume rm default/directorTest
+
   run remove_nodes
   assert_success
 }
