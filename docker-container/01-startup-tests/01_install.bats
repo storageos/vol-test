@@ -5,6 +5,16 @@ load ../../test_helper
 short_run="run ui_timeout"
 long_run="run long_timeout"
 
+setup() {
+  msg=$(printf "Starting Test: %s (%s)" "$BATS_TEST_NAME" "$BATS_TEST_FILENAME")
+  systemd_log "$msg"
+}
+
+teardown() {
+  msg=$(printf "End of Test: %s (%s)" "$BATS_TEST_NAME" "$BATS_TEST_FILENAME")
+  systemd_log "$msg"
+}
+
 @test "Install containers on three nodes" {
   join=$(printf "%s:5705,%s:5705,%s:5705" "${prefix#*@}" "${prefix2#*@}" "${prefix3#*@}")
 
