@@ -18,6 +18,16 @@ cliopts="$CLIOPTS"
 # This string replace is UGLY, but it works for now
 node_driver=${driver/plugin/node}
 
+function systemd_log {
+  args="$@"
+  command=$(printf "echo '%s' | systemd-cat -t 'e2e' -p 'info'" "$args")
+
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
+  for i in "${arr[@]}"; do
+    ui_timeout "$i" "$command"
+  done
+}
+
 # OSX appears to not have timeout(1) by default, and the copy in coreutils is called gtimeout.
 # Almost everything however will have some kind of perl 5 variant.
 # This ugly one liner seemed less ugly than which + alias magic, and doesn't require coreutils.
