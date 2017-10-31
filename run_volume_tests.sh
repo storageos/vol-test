@@ -56,6 +56,27 @@ Host tag      DO_TAG    $DO_TAG
 ==
 EOF
 
+if [[ "$TEST_CONTAINER" == "1" ]] ; then
+  echo "#############################################"
+  echo "# running all docker container (node) tests #"
+  echo "#############################################"
+
+  # for d in $(find docker-container -type d -links 2) ; do
+  # The above finds all the leaf directories (taking docker-container to be the tree's root) but
+  # does not work for OSX machines.
+  # As it's more obvious than the portable version, it is left for documentation reasons
+  for d in $(find docker-container -type d -exec sh -c '(ls -p "{}"|grep />/dev/null)||echo "{}"' \;); do
+    echo "-----------------------------"
+    echo  "$d bats suite running"
+    echo "-----------------------------"
+    pushd "$d"
+     bats $BATS_OPTS .
+    popd
+  done
+
+  echo "#### End of node tests ######################"
+fi
+
 pushd startup-tests
 echo "-----------------------------"
 echo "running startup procedure tests"

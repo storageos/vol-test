@@ -15,13 +15,103 @@ createopts="$CREATEOPTS"
 pluginopts="$PLUGINOPTS"
 cliopts="$CLIOPTS"
 
+# This string replace is UGLY, but it works for now
+node_driver=${driver/plugin/node}
+
+function systemd_log {
+  args="$@"
+  command=$(printf "echo '%s' | systemd-cat -t 'e2e' -p 'info'" "$args")
+
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
+  for i in "${arr[@]}"; do
+    ui_timeout "$i" "$command"
+  done
+}
+
+# OSX appears to not have timeout(1) by default, and the copy in coreutils is called gtimeout.
+# Almost everything however will have some kind of perl 5 variant.
+# This ugly one liner seemed less ugly than which + alias magic, and doesn't require coreutils.
+function timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
+
+# takes env pairs as args, eg. "install_nodes 'JOIN=192.168.0.2' 'OTHERVAR=othervalue'"
+function install_nodes {
+  extra_env=""
+
+  # build set of additional env vars
+  for i in "$@"; do
+      extra_env+=$(printf -- '-e %s ' "$i")
+  done
+  printf "Adding additional env vars:\n\t%s\n" "$extra_env"
+
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
+  for i in "${arr[@]}"; do
+    # lets see these install commands
+    set -x
+    long_timeout "$i" docker run -d --name storageos \
+      $extra_env \
+      -e HOSTNAME \
+      -e ADVERTISE_IP="${i#*@}" \
+      --net=host \
+      --pid=host \
+      --privileged \
+      --cap-add SYS_ADMIN \
+      --device /dev/fuse \
+      -v /var/lib/storageos:/var/lib/storageos:rshared \
+      -v /run/docker/plugins:/run/docker/plugins \
+      "$node_driver" server
+    rtn_code=$?
+    set +x
+
+    # ensure that the node was installed
+    if [[ $rtn_code -gt 0 ]] ; then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
+# remove_nodes makes a best attempt to clean the state on remote hosts after a node install.
+# this function will stop any running container (sigkill-ing if necessary), remove the stopped
+# container, unmount any mount-points left (likely if DP sigkill-ed) before recursively deleting
+# /var/lib/storageos
+function remove_nodes {
+  declare -a arr=("$prefix" "$prefix2" "$prefix3")
+  for i in "${arr[@]}"; do
+    # long_timeout "$i" docker stop storageos
+    long_timeout "$i" docker stop storageos
+    long_timeout "$i" docker rm storageos
+    long_timeout "$i" umount /var/lib/storageos/volumes
+    long_timeout "$i" rm -rf /var/lib/storageos
+  done
+}
+
+# get_pid takes a remote host (in the format of $prefix) as it's first arg, and a string partial as
+# the second arg. It then searches for a process running in the storageos container on the given
+# remote host who's name matches the string partial. This process's pid is then returned. The
+# caller can then use this information to kill this process with $arg1 kill $returned_pid as the
+# container was run with --pid=host.
+function get_pid {
+    ssh_prefix=$1
+    proc_name=$2
+
+    rtn_pid=$($ssh_prefix docker container top storageos | grep $proc_name | egrep -o '([0-9]+)' | head -n 1)
+
+    # The caller can capture this
+    echo $rtn_pid
+}
+
 # wait a reasonable time for a command to complete before stopping it and returning
 # returns 124 or 128+9 on timeout (the latter if the command required sigkill)
 function ui_timeout {
   timeout_duration=10
-  kill_after=1 # additional time to wait after sending signal before killing
+  # kill_after=1 # additional time to wait after sending signal before killing
 
-  timeout -k $kill_after $timeout_duration $@
+  # Our timeout alternative doesn't support kill after behaviour, an asumption is made that the
+  # child processes will not be atempting to catch SIGALARM. If this turns out to not be the case
+  # then we will need to reconsider.
+  #timeout -k $kill_after $timeout_duration $@
+  timeout $timeout_duration $@
   exit_status=$?
 
   # timed out
@@ -41,9 +131,13 @@ function ui_timeout {
 # returns 124 or 128+9 on timeout (the latter if the command required sigkill)
 function long_timeout {
   timeout_duration=120
-  kill_after=20 # additional time to wait after sending signal before killing
+  # kill_after=20 # additional time to wait after sending signal before killing
 
-  timeout -k $kill_after $timeout_duration $@
+  # Our timeout alternative doesn't support kill after behaviour, an asumption is made that the
+  # child processes will not be atempting to catch SIGALARM. If this turns out to not be the case
+  # then we will need to reconsider.
+  # timeout -k $kill_after $timeout_duration $@
+  timeout $timeout_duration $@
   exit_status=$?
 
   # timed out
@@ -66,7 +160,7 @@ function wait_for_cluster {
 
   printf "VARS %s %s\n" "$no_of_nodes" "$max_time"
 
-  for ((number=0;number < $max_time;number++))
+  for ((number=0;number<max_time;number++))
   {
     sleep "1s"
     health=$($prefix storageos -u storageos -p storageos cluster health --format '{{.KV}}{{.NATS}}{{.Scheduler}}') || true
@@ -77,7 +171,7 @@ function wait_for_cluster {
       if [[ $(echo "$health" | wc -l) -eq $no_of_nodes ]]; then
         ok=1
 
-        # Every line should start with 'Healthy'
+        # Every line should read 'alive' for all services
         while read -r line; do
           if [[ "$line" != "alivealivealive" ]]; then
             ok=0
@@ -86,6 +180,9 @@ function wait_for_cluster {
 
         # Iff all are healthy, return early
         if [[ ok -eq 1 ]]; then
+          # extra safety sleep to wait for API router switch
+          # should go away once there is an API state in the health status
+          sleep 5
           return 0
         fi
 
@@ -93,13 +190,16 @@ function wait_for_cluster {
     fi
   }
 
-  # Timeout
+  # Timeout - time to return
+  # extra safety sleep to wait for API router switch
+  # should go away once there is an API state in the health status
+  sleep 5
   return 0
 }
 
 # Wait for the cluster to be available and volumes are provisionable
 function wait_for_volumes {
-    wait_for_cluster $1
+    wait_for_cluster "$1"
     sleep "15s" # CP has a safety sleep on newly provisioned nodes
     return 0
 }
